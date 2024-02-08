@@ -12,21 +12,14 @@ pub struct Database {
 }
 
 impl Database {
-    pub async fn connect(connection_string: &str, run_migrations: bool) -> anyhow::Result<Self> {
+    pub async fn connect(connection_string: &str) -> anyhow::Result<Self> {
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .connect(connection_string)
             .await
             .context("error while initializing the database connection pool")?;
 
-        if run_migrations {
-            info!("migrations enabled, running...");
-            sqlx::migrate!()
-                .run(&pool)
-                .await
-                .context("error while running database migrations")?;
-            info!("migrations successfully ran, initializing axum server...");
-        }
+        
 
         Ok(Self { pool })
     }

@@ -88,7 +88,7 @@ impl ApplicationServer {
 
         info!("🚀 Server has launched on https://{addr}");
         debug!("routes initialized, listening on port {}", port);
-        let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
         axum::serve(listener, router.into_make_service())
             .with_graceful_shutdown(Self::shutdown_signal())
             .await
