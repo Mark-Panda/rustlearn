@@ -1,0 +1,28 @@
+version: '3'
+services:
+  postgres-db:
+    image: postgres:latest
+    container_name: postgresDB-server
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: rust
+      POSTGRES_PASSWORD: rust
+    volumes:
+      - ./volumes/database_postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:latest
+    container_name: redisCache-server
+    restart: always
+    command: ['redis-server', '--appendonly', 'yes']
+    hostname: redis
+    volumes:
+      - ./volumes/database_redis-data:/data
+    ports:
+      - '6379:6379'
+networks:
+  rust:
+    ipam:
+      config:
+        - subnet: 192.100.0.0/16

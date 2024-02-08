@@ -1,25 +1,28 @@
-use tracing::{info, Level};
-use tracing_subscriber::FmtSubscriber;
+use std::sync::Arc;
 
-mod router;
-mod app;
+use anyhow::Context;
+use clap::Parser;
+use dotenvy::dotenv;
+
+use tracing::info;
+
+use system_test::{AppConfig, ApplicationServer, Database, Logger};
 
 #[tokio::main]
-async fn main() {
-    // initialize tracing
-    let subscriber = FmtSubscriber::builder()
-        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
-        // will be written to stdout.
-        .with_max_level(Level::TRACE)
-        // completes the builder.
-        .finish();
+async fn main() -> anyhow::Result<()> {
+    dotenv().ok();
+    let config = Arc::new(AppConfig::parse());
 
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("setting default subscriber failed");
+    let _guard = Logger::init(config.cargo_env);
 
-    let app = app::create_app().await;
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    info!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    info!("environment loaded and configuration parsed, initializing Postgres connection and running migrations...");
+    let db = Database::connect(&config.database_url, config.run_migrations)
+        .await
+        .expect("could not initialize the database connection pool");
+
+    ApplicationServer::serve(config, db)
+        .await
+        .context("could not initialize application routes")?;
+
+    Ok(())
 }
