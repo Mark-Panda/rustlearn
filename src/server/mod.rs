@@ -11,6 +11,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Context;
+use axum::extract::{MatchedPath, Request};
 use axum::http::HeaderValue;
 use axum::middleware::{self, Next};
 use axum::response::IntoResponse;
@@ -20,6 +21,7 @@ use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, R
 use lazy_static::lazy_static;
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder};
 use serde_json::json;
+use tokio::time::Instant;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::{cors::Any, cors::CorsLayer, trace::TraceLayer};
 use tracing::{debug, info};
@@ -51,6 +53,7 @@ impl ApplicationServer {
         let services = Services::new(db, config.clone());
 
         if config.seed {
+            // TODO: 创建测试数据
             info!("seeding enabled, creating test data...");
             SeedService::new(services.clone())
                 .seed()
@@ -78,8 +81,8 @@ impl ApplicationServer {
                     .layer(Extension(services))
                     .layer(BufferLayer::new(1024))
                     .layer(RateLimitLayer::new(5, Duration::from_secs(1))),
-            );
-            // .route_layer(middleware::from_fn(Self::track_metrics));
+            )
+            .route_layer(middleware::from_fn(Self::track_metrics));
 
         let router = router.fallback(Self::handle_404);
 
@@ -120,30 +123,31 @@ impl ApplicationServer {
         }
     }
 
-    // async fn track_metrics<B>(request: Request<B>, next: Next) -> impl IntoResponse {
-    //     let path = if let Some(matched_path) = request.extensions().get::<MatchedPath>() {
-    //         matched_path.as_str().to_owned()
-    //     } else {
-    //         request.uri().path().to_owned()
-    //     };
+    async fn track_metrics(request: Request, next: Next) -> impl IntoResponse {
+        let path = if let Some(matched_path) = request.extensions().get::<MatchedPath>() {
+            matched_path.as_str().to_owned()
+        } else {
+            request.uri().path().to_owned()
+        };
 
-    //     let start = Instant::now();
-    //     let method = request.method().clone();
-    //     let response = next.run(request).await;
-    //     let latency = start.elapsed().as_secs_f64();
-    //     let status = response.status().as_u16().to_string();
+        let start = Instant::now();
+        let method = request.method().clone();
+        let response = next.run(request).await;
+        let latency = start.elapsed().as_secs_f64();
+        let status = response.status().as_u16().to_string();
 
-    //     let labels = [
-    //         ("method", method.to_string()),
-    //         ("path", path),
-    //         ("status", status),
-    //     ];
+        let labels = [
+            ("method", method.to_string()),
+            ("path", path),
+            ("status", status),
+            ("latency", latency.to_string()),
+        ];
 
-    //     metrics::counter!("http_requests_total", &labels);
-    //     metrics::histogram!("http_requests_duration_seconds", latency);
+        metrics::counter!("http_requests_total", &labels);
+        metrics::histogram!("http_requests_duration_seconds", &labels);
 
-    //     response
-    // }
+        response
+    }
 
     /// Tokio signal handler that will wait for a user to press CTRL+C.
     /// We use this in our hyper `Server` method `with_graceful_shutdown`.

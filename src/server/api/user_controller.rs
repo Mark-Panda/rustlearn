@@ -101,7 +101,7 @@ impl UserController {
 
         services.sessions.refresh_access_token(session_id).await?;
 
-        let cookie = jar.remove(Cookie::named("refresh_token"));
+        let cookie = jar.remove(Cookie::from("refresh_token"));
 
         Ok(cookie)
     }
