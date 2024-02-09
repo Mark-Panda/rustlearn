@@ -19,10 +19,11 @@ where
 {
     type Rejection = Error;
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        // TODO: 获取扩展服务
         let Extension(services): Extension<Services> = Extension::from_request_parts(parts, state)
             .await
             .map_err(|err| Error::InternalServerErrorWithContext(err.to_string()))?;
-
+        // TODO: 获取header中的AUTHORIZATION的值
         if let Some(authorization_header) = parts.headers.get(AUTHORIZATION) {
             let header_value = authorization_header
                 .to_str()

@@ -31,19 +31,20 @@ pub mod user_services;
 
 #[derive(Clone)]
 pub struct Services {
-    pub jwt_util: DynJwtUtil,
-    pub users: DynUsersService,
-    pub sessions: DynSessionsService,
-    pub categories: DynCategoriesService,
+    pub jwt_util: DynJwtUtil, // 认证鉴权服务
+    pub users: DynUsersService, // 用户服务
+    pub sessions: DynSessionsService, // session服务
+    pub categories: DynCategoriesService, // 类别服务
 }
 
 impl Services {
     pub fn new(db: Database, config: Arc<AppConfig>) -> Self {
-        info!("initializing utility services...");
+        info!("初始化实用服务...");
         let security_service = Arc::new(ArgonSecurityUtil::new(config.clone())) as DynArgonUtil;
         let jwt_util = Arc::new(JwtTokenUtil::new(config)) as DynJwtUtil;
 
-        info!("utility services initialized, building feature services...");
+        info!("实用服务已初始化，正在构建要素服务...");
+        // dao层服务
         let repository = Arc::new(db);
 
         let sessions = Arc::new(SessionsService::new(repository.clone(), jwt_util.clone()))

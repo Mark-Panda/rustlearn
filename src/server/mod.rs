@@ -69,21 +69,22 @@ impl ApplicationServer {
             .allow_headers(Any);
 
         let router = Router::new()
-            .nest("/api/v1", api::app())
+            .nest("/api/v1", api::app()) // nest路由组
             .route("/", get(api::health))
             .route("/metrics", get(move || ready(recorder_handle.render())))
             .layer(
                 ServiceBuilder::new()
                     .layer(TraceLayer::new_for_http())
                     .layer(HandleErrorLayer::new(Self::handle_timeout_error))
-                    .timeout(Duration::from_secs(*HTTP_TIMEOUT))
-                    .layer(cors)
-                    .layer(Extension(services))
-                    .layer(BufferLayer::new(1024))
-                    .layer(RateLimitLayer::new(5, Duration::from_secs(1))),
+                    .timeout(Duration::from_secs(*HTTP_TIMEOUT)) // 超时处理
+                    .layer(cors) // 跨域
+                    .layer(Extension(services)) // 扩展服务
+                    .layer(BufferLayer::new(1024)) // buffer限制
+                    .layer(RateLimitLayer::new(5, Duration::from_secs(1))), // 请求限流
             )
             .route_layer(middleware::from_fn(Self::track_metrics));
 
+        // 404处理
         let router = router.fallback(Self::handle_404);
 
         let port = config.port;
