@@ -4,13 +4,12 @@ pub mod error;
 pub mod extractors;
 pub mod services;
 pub mod utils;
-
-use std::future::ready;
+use tokio::signal::unix::{signal, SignalKind};
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use std::time::Duration;
 
-use anyhow::Context;
+use anyhow::{Context, Ok};
 use axum::extract::{MatchedPath, Request};
 use axum::http::HeaderValue;
 use axum::middleware::{self, Next};
@@ -19,7 +18,6 @@ use axum::routing::get;
 use axum::Extension;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, Router};
 use lazy_static::lazy_static;
-use metrics_exporter_prometheus::{Matcher, PrometheusBuilder};
 use serde_json::json;
 use tokio::time::Instant;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
@@ -41,15 +39,6 @@ pub struct ApplicationServer;
 
 impl ApplicationServer {
     pub async fn serve(config: Arc<AppConfig>, db: Database) -> anyhow::Result<()> {
-        let recorder_handle = PrometheusBuilder::new()
-            .set_buckets_for_metric(
-                Matcher::Full(String::from("http_requests_duration_seconds")),
-                *EXPONENTIAL_SECONDS,
-            )
-            .context("could not setup buckets for metrics, verify matchers are correct")?
-            .install_recorder()
-            .context("could not install metrics recorder")?;
-
         let services = Services::new(db, config.clone());
 
         if config.seed {
@@ -68,13 +57,14 @@ impl ApplicationServer {
             .allow_methods(Any)
             .allow_headers(Any);
 
+        // TODO: 中间件链接https://docs.rs/axum/latest/axum/middleware/index.html#commonly-used-middleware  https://docs.rs/axum/latest/axum/middleware/index.html#applying-middleware
+        // axum 使用tower-http 实现中间件https://docs.rs/tower-http/0.5.0/tower_http/cors/index.html
         let router = Router::new()
             .nest("/api/v1", api::app()) // nest路由组
             .route("/", get(api::health))
-            .route("/metrics", get(move || ready(recorder_handle.render())))
             .layer(
                 ServiceBuilder::new()
-                    .layer(TraceLayer::new_for_http())
+                    .layer(TraceLayer::new_for_http()) // 高级跟踪和日志
                     .layer(HandleErrorLayer::new(Self::handle_timeout_error))
                     .timeout(Duration::from_secs(*HTTP_TIMEOUT)) // 超时处理
                     .layer(cors) // 跨域
@@ -82,7 +72,7 @@ impl ApplicationServer {
                     .layer(BufferLayer::new(1024)) // buffer限制
                     .layer(RateLimitLayer::new(5, Duration::from_secs(1))), // 请求限流
             )
-            .route_layer(middleware::from_fn(Self::track_metrics));
+            .route_layer(middleware::from_fn(Self::track_metrics)); // 请求扩展将状态从中间件传递到处理程序
 
         // 404处理
         let router = router.fallback(Self::handle_404);
@@ -101,7 +91,7 @@ impl ApplicationServer {
         Ok(())
     }
 
-    /// Adds a custom handler for tower's `TimeoutLayer`, see https://docs.rs/axum/latest/axum/middleware/index.html#commonly-used-middleware.
+    /// TODO: axum常用中间件链接 Adds a custom handler for tower's `TimeoutLayer`, see https://docs.rs/axum/latest/axum/middleware/index.html#commonly-used-middleware.
     async fn handle_timeout_error(err: BoxError) -> (StatusCode, Json<serde_json::Value>) {
         if err.is::<tower::timeout::error::Elapsed>() {
             (
@@ -153,10 +143,14 @@ impl ApplicationServer {
     /// Tokio signal handler that will wait for a user to press CTRL+C.
     /// We use this in our hyper `Server` method `with_graceful_shutdown`.
     async fn shutdown_signal() {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("expect tokio signal ctrl-c");
-        println!("signal shutdown");
+        // An infinite stream of hangup signals.
+        let mut stream = signal(SignalKind::hangup()).expect("expect tokio signal SIGHUP");
+
+        // Print whenever a HUP signal is received
+        loop {
+            stream.recv().await;
+            println!("signal shutdown");
+        }
     }
 
     async fn handle_404() -> impl IntoResponse {
