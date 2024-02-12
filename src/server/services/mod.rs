@@ -14,7 +14,7 @@ use crate::{
             argon_utils::{ArgonSecurityUtil, DynArgonUtil},
             jwt_utils::JwtTokenUtil,
         },
-    },
+    }, SimpleCache,
 };
 
 use self::{
@@ -38,7 +38,7 @@ pub struct Services {
 }
 
 impl Services {
-    pub fn new(db: Database, config: Arc<AppConfig>) -> Self {
+    pub fn new(db: Database, cache: SimpleCache, config: Arc<AppConfig>) -> Self {
         info!("初始化实用服务...");
         let security_service = Arc::new(ArgonSecurityUtil::new(config.clone())) as DynArgonUtil;
         let jwt_util = Arc::new(JwtTokenUtil::new(config)) as DynJwtUtil;

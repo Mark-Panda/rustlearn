@@ -16,6 +16,9 @@ pub struct AppConfig {
     pub database_url: String,
 
     #[clap(long, env)]
+    pub cache_url: String,
+
+    #[clap(long, env)]
     pub argon_salt: String,
 
     #[clap(long, env)]

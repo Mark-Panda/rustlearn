@@ -28,6 +28,7 @@ use crate::config::AppConfig;
 use crate::database::Database;
 use crate::server::services::seed_services::SeedService;
 use crate::server::services::Services;
+use crate::SimpleCache;
 
 lazy_static! {
     static ref HTTP_TIMEOUT: u64 = 30;
@@ -38,8 +39,8 @@ lazy_static! {
 pub struct ApplicationServer;
 
 impl ApplicationServer {
-    pub async fn serve(config: Arc<AppConfig>, db: Database) -> anyhow::Result<()> {
-        let services = Services::new(db, config.clone());
+    pub async fn serve(config: Arc<AppConfig>, db: Database, cache: SimpleCache) -> anyhow::Result<()> {
+        let services = Services::new(db, cache,  config.clone());
 
         if config.seed {
             // TODO: 创建测试数据

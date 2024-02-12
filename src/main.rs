@@ -5,8 +5,7 @@ use clap::Parser;
 use dotenvy::dotenv;
 
 use tracing::info;
-
-use system_test::{AppConfig, ApplicationServer, Database, Logger};
+use system_test::{AppConfig, ApplicationServer, Database, SimpleCache, Logger};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,7 +19,9 @@ async fn main() -> anyhow::Result<()> {
         .await
         .expect("could not initialize the database connection pool");
 
-    ApplicationServer::serve(config, db)
+    let cache = SimpleCache::connect(&config.cache_url).await.expect("could not initialize the cache connection ");
+
+    ApplicationServer::serve(config, db, cache)
         .await
         .context("could not initialize application routes")?;
 
