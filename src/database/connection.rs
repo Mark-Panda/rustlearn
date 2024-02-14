@@ -17,9 +17,6 @@ impl Database {
             .connect(connection_string)
             .await
             .context("error while initializing the database connection pool")?;
-
-        
-
         Ok(Self { pool })
     }
 }

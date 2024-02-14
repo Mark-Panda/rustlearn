@@ -13,5 +13,4 @@ pub fn app() -> Router {
     Router::new()
         .nest("/users", UserController::app())
         .nest("/categories", CategoryController::app())
-        .route("/health", get(health))
 }
