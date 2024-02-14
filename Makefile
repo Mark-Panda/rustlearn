@@ -1,10 +1,12 @@
 
 
 .PHONY: run
+# run运行服务
 run:
 	cargo run
 
 .PHONY: build
+# build编译
 build:
 	cargo build
 
