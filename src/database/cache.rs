@@ -1,8 +1,5 @@
-
 use std::sync::Arc;
-
 use async_trait::async_trait;
-use mockall::automock;
 use redis::{ AsyncCommands, Client, RedisError};
 use anyhow::Result;
 use tracing::info;
@@ -22,7 +19,6 @@ impl SimpleCache  {
 }
 pub type DynRedisClientExt = Arc<dyn RedisClientExt + Send + Sync>;
 
-#[automock]
 #[async_trait]
 pub trait RedisClientExt{
   async fn ping(&self) -> Result<Option<String>, RedisError>;

@@ -1,7 +1,5 @@
 use std::{sync::Arc, time::SystemTime};
-
 use async_trait::async_trait;
-use mockall::automock;
 use serde::{Deserialize, Serialize};
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;
@@ -46,7 +44,6 @@ impl Default for CategoryType {
     }
 }
 
-#[automock]
 #[async_trait]
 pub trait CategoriesRepository {
     async fn create_category(

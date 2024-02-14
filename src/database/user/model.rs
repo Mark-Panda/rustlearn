@@ -1,7 +1,5 @@
 use std::{sync::Arc, time::SystemTime};
-
 use async_trait::async_trait;
-use mockall::automock;
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;
 use uuid::{uuid, Uuid};
@@ -32,7 +30,6 @@ impl Default for User {
 /// Similar to above, we want to keep a reference count across threads so we can manage our connection pool.
 pub type DynUsersRepository = Arc<dyn UsersRepository + Send + Sync>;
 
-#[automock]
 #[async_trait]
 pub trait UsersRepository {
     async fn create_user(

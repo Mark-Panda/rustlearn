@@ -1,7 +1,6 @@
 use std::{sync::Arc, time::SystemTime};
 
 use async_trait::async_trait;
-use mockall::automock;
 use sqlx::{types::time::OffsetDateTime, FromRow};
 use uuid::{uuid, Uuid};
 
@@ -39,7 +38,6 @@ impl Default for Session {
 
 pub type DynSessionsRepository = Arc<dyn SessionsRepository + Send + Sync>;
 
-#[automock]
 #[async_trait]
 pub trait SessionsRepository {
     async fn new_session(

@@ -1,4 +1,3 @@
-use mockall::automock;
 use std::sync::Arc;
 use tracing::info;
 use uuid::Uuid;
@@ -15,7 +14,6 @@ use crate::{
 
 pub type DynCategoriesService = Arc<dyn CategoriesServiceTrait + Send + Sync>;
 
-#[automock]
 #[async_trait]
 pub trait CategoriesServiceTrait {
     async fn create_category(

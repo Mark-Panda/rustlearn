@@ -1,4 +1,3 @@
-use mockall::automock;
 use std::sync::Arc;
 use tracing::{error, info};
 use uuid::Uuid;
@@ -23,7 +22,6 @@ use super::session_services::DynSessionsService;
 /// around which themselves depend on the user repostiory, and ultimately, our Posgres connection pool.
 pub type DynUsersService = Arc<dyn UsersServiceTrait + Send + Sync>;
 
-#[automock]
 #[async_trait]
 pub trait UsersServiceTrait {
     async fn signup_user(&self, request: SignUpUserDto) -> AppResult<ResponseUserDto>;
