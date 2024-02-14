@@ -17,7 +17,7 @@ pub struct SimpleCache {
 impl SimpleCache  {
     pub async fn connect(connection_string: &str) -> Result<Self> {
         let client = Client::open(connection_string)?;
-        Ok(Self { client: client })
+        Ok(Self { client })
     }
 }
 pub type DynRedisClientExt = Arc<dyn RedisClientExt + Send + Sync>;
