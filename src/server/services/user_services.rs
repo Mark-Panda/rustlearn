@@ -14,7 +14,7 @@ use crate::{
         error::{AppResult, Error},
         utils::{argon_utils::DynArgonUtil, jwt_utils::DynJwtUtil},
     },
-    user::DynUsersRepository,
+    user::DynUsersRepository, DynRedisClientExt,
 };
 
 use super::session_services::DynSessionsService;
@@ -49,6 +49,7 @@ pub struct UsersService {
     argon_util: DynArgonUtil,
     jwt_util: DynJwtUtil,
     session_service: DynSessionsService,
+    cache: DynRedisClientExt,
 }
 
 impl UsersService {
@@ -57,12 +58,14 @@ impl UsersService {
         argon_util: DynArgonUtil,
         jwt_util: DynJwtUtil,
         session_service: DynSessionsService,
+        cache: DynRedisClientExt,
     ) -> Self {
         Self {
             repository,
             argon_util,
             jwt_util,
             session_service,
+            cache,
         }
     }
 }
@@ -70,6 +73,13 @@ impl UsersService {
 #[async_trait]
 impl UsersServiceTrait for UsersService {
     async fn signup_user(&self, request: SignUpUserDto) -> AppResult<ResponseUserDto> {
+        let _ = self.cache.set("test", "test_data", 10000).await;
+        let cache_str = self.cache.get("test").await.unwrap();
+        if let Some(string) = cache_str {
+            info!("缓存结果{}", string);
+        } else {
+            println!("缓存结果 is None");
+        }
         let email = request.email.unwrap();
         let name = request.name.unwrap();
         let password = request.password.unwrap();

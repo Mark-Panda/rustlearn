@@ -3,6 +3,7 @@ use crate::database::user::MockUsersRepository;
 use crate::server::services::session_services::MockSessionsServiceTrait;
 use crate::server::utils::argon_utils::MockArgonUtil;
 use crate::server::utils::jwt_utils::MockJwtUtil;
+use crate::MockRedisClientExt;
 
 pub struct CategoriesServiceTestFixture {
     pub mock_repository: MockCategoriesRepository,
@@ -27,6 +28,7 @@ pub struct UsersServiceTestFixture {
     pub mock_jwt_util: MockJwtUtil,
     pub mock_argon_util: MockArgonUtil,
     pub mock_sessions_services: MockSessionsServiceTrait,
+    pub mock_cache: MockRedisClientExt,
 }
 
 impl Default for UsersServiceTestFixture {
@@ -42,6 +44,7 @@ impl UsersServiceTestFixture {
             mock_jwt_util: MockJwtUtil::new(),
             mock_argon_util: MockArgonUtil::new(),
             mock_sessions_services: MockSessionsServiceTrait::new(),
+            mock_cache: MockRedisClientExt::new(),
         }
     }
 }

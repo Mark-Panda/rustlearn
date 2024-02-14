@@ -11,7 +11,7 @@ use system_test::{
             user_services::{UsersService, UsersServiceTrait},
         },
         utils::{argon_utils::DynArgonUtil, jwt_utils::DynJwtUtil},
-    },
+    }, DynRedisClientExt,
 };
 use uuid::uuid;
 
@@ -56,6 +56,7 @@ async fn return_success_when_downstream_services_succeed() {
         Arc::new(fixture.mock_argon_util) as DynArgonUtil,
         Arc::new(fixture.mock_jwt_util) as DynJwtUtil,
         Arc::new(fixture.mock_sessions_services) as DynSessionsService,
+        Arc::new(fixture.mock_cache) as DynRedisClientExt,
     );
 
     // act
@@ -88,6 +89,7 @@ async fn return_error_when_user_exixsts() {
         Arc::new(fixture.mock_argon_util) as DynArgonUtil,
         Arc::new(fixture.mock_jwt_util) as DynJwtUtil,
         Arc::new(fixture.mock_sessions_services) as DynSessionsService,
+        Arc::new(fixture.mock_cache) as DynRedisClientExt,
     );
 
     // act

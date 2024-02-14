@@ -46,6 +46,7 @@ impl Services {
         info!("实用服务已初始化，正在构建要素服务...");
         // dao层服务
         let repository = Arc::new(db);
+        let cache_repository = Arc::new(cache);
 
         let sessions = Arc::new(SessionsService::new(repository.clone(), jwt_util.clone()))
             as DynSessionsService;
@@ -55,6 +56,7 @@ impl Services {
             security_service,
             jwt_util.clone(),
             sessions.clone(),
+            cache_repository.clone(),
         )) as DynUsersService;
 
         let categories =
