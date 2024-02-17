@@ -28,6 +28,7 @@ use crate::config::AppConfig;
 use crate::database::Database;
 use crate::server::services::seed_services::SeedService;
 use crate::server::services::Services;
+use crate::utils::HttpClient;
 use crate::SimpleCache;
 
 lazy_static! {
@@ -40,8 +41,12 @@ pub struct ApplicationServer;
 
 impl ApplicationServer {
     pub async fn serve(config: Arc<AppConfig>, db: Database, cache: SimpleCache) -> anyhow::Result<()> {
-        let services = Services::new(db, cache,  config.clone());
 
+        // HTTP初始化
+        let http_client = HttpClient::connect(config.http_time_out).await
+        .expect("could not initialize the http client connect");
+        let services = Services::new(db, cache, http_client, config.clone());
+        
         if config.seed {
             // TODO: 创建测试数据
             info!("seeding enabled, creating test data...");

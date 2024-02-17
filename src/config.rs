@@ -32,4 +32,7 @@ pub struct AppConfig {
 
     #[clap(long, env)]
     pub seed: bool,
+
+    #[clap(long, env, default_value = "30")]
+    pub http_time_out: u64,
 }

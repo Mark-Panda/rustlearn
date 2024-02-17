@@ -3,9 +3,7 @@ use std::sync::Arc;
 use tracing::info;
 
 use crate::{
-    config::AppConfig,
-    database::Database,
-    server::{
+    config::AppConfig, database::Database, server::{
         services::{
             category_services::CategoriesService, session_services::SessionsService,
             user_services::UsersService,
@@ -14,7 +12,7 @@ use crate::{
             argon_utils::{ArgonSecurityUtil, DynArgonUtil},
             jwt_utils::JwtTokenUtil,
         },
-    }, SimpleCache,
+    }, utils::HttpClient, SimpleCache
 };
 
 use self::{
@@ -38,7 +36,7 @@ pub struct Services {
 }
 
 impl Services {
-    pub fn new(db: Database, cache: SimpleCache, config: Arc<AppConfig>) -> Self {
+    pub fn new(db: Database, cache: SimpleCache, http_client: HttpClient, config: Arc<AppConfig>) -> Self {
         info!("初始化实用服务...");
         let security_service = Arc::new(ArgonSecurityUtil::new(config.clone())) as DynArgonUtil;
         let jwt_util = Arc::new(JwtTokenUtil::new(config)) as DynJwtUtil;
@@ -47,6 +45,9 @@ impl Services {
         // dao层服务
         let repository = Arc::new(db);
         let cache_repository = Arc::new(cache);
+
+        // http请求 TODO: 待组合
+        let _http_client_repository = Arc::new(http_client);
 
         let sessions = Arc::new(SessionsService::new(repository.clone(), jwt_util.clone()))
             as DynSessionsService;
