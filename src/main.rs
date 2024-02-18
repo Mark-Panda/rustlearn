@@ -1,11 +1,9 @@
-use std::sync::Arc;
-
 use anyhow::Context;
 use clap::Parser;
 use dotenvy::dotenv;
-
+use std::sync::Arc;
+use system_test::{AppConfig, ApplicationServer, Database, Logger, SimpleCache};
 use tracing::info;
-use system_test::{AppConfig, ApplicationServer, Database, SimpleCache, Logger};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,7 +17,9 @@ async fn main() -> anyhow::Result<()> {
         .await
         .expect("could not initialize the database connection pool");
 
-    let cache = SimpleCache::connect(&config.cache_url).await.expect("could not initialize the cache connection ");
+    let cache = SimpleCache::connect(&config.cache_url)
+        .await
+        .expect("could not initialize the cache connection ");
 
     ApplicationServer::serve(config, db, cache)
         .await
