@@ -2,6 +2,7 @@ use std::sync::Arc;
 use tracing::{error, info};
 use uuid::Uuid;
 
+use crate::{config::AppConfig, OpenAiClient};
 use async_trait::async_trait;
 
 use crate::{
@@ -48,22 +49,32 @@ pub struct UsersService {
     jwt_util: DynJwtUtil,
     session_service: DynSessionsService,
     cache: DynRedisClientExt,
+    // 允许 config 字段未被读取
+    #[allow(dead_code)]
+    config: Arc<AppConfig>,
+    // 允许 ai_client 字段未被读取
+    #[allow(dead_code)]
+    ai_client: OpenAiClient,
 }
 
 impl UsersService {
     pub fn new(
+        config: Arc<AppConfig>,
         repository: DynUsersRepository,
         argon_util: DynArgonUtil,
         jwt_util: DynJwtUtil,
         session_service: DynSessionsService,
         cache: DynRedisClientExt,
+        ai_client: OpenAiClient,
     ) -> Self {
         Self {
+            config,
             repository,
             argon_util,
             jwt_util,
             session_service,
             cache,
+            ai_client,
         }
     }
 }
@@ -71,6 +82,8 @@ impl UsersService {
 #[async_trait]
 impl UsersServiceTrait for UsersService {
     async fn signup_user(&self, request: SignUpUserDto) -> AppResult<ResponseUserDto> {
+        
+        
         let _ = self.cache.set("test", "test_data", 10000).await;
         let cache_str = self.cache.get("test").await.unwrap();
         if let Some(string) = cache_str {
@@ -199,3 +212,5 @@ impl UsersServiceTrait for UsersService {
         Ok(updated_user.into_dto(token))
     }
 }
+
+

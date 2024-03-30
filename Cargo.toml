@@ -32,4 +32,5 @@ uuid = { version = "1.3.0", features = ["v4", "serde"] }
 validator = { version = "0.17.0", features = ["derive"] }
 redis = { version = "0.25.2", features = [ "cluster-async", "async-std-comp", "aio" ] }
 reqwest = {version = "0.12.2", features = ["json", "multipart", "stream"]}
-openai = "1.0.0-alpha.14"
+# openai-api-rs = "4.0.8"
+async-openai = "0.19.1" # 只能使用openai的官方账号 因为openai_api_base不能自定义

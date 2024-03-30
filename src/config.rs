@@ -35,4 +35,7 @@ pub struct AppConfig {
 
     #[clap(long, env, default_value = "30")]
     pub http_time_out: u64,
+
+    #[clap(long, env)]
+    pub openai_api_key: String,
 }

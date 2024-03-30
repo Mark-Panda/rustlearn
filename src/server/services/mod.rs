@@ -12,7 +12,7 @@ use crate::{
             argon_utils::{ArgonSecurityUtil, DynArgonUtil},
             jwt_utils::JwtTokenUtil,
         },
-    }, utils::HttpClient, SimpleCache
+    }, utils::HttpClient, OpenAiClient, SimpleCache
 };
 
 use self::{
@@ -36,10 +36,10 @@ pub struct Services {
 }
 
 impl Services {
-    pub fn new(db: Database, cache: SimpleCache, http_client: HttpClient, config: Arc<AppConfig>) -> Self {
+    pub fn new(db: Database, cache: SimpleCache, http_client: HttpClient, config: Arc<AppConfig>, ai_client: OpenAiClient) -> Self {
         info!("初始化实用服务...");
         let security_service = Arc::new(ArgonSecurityUtil::new(config.clone())) as DynArgonUtil;
-        let jwt_util = Arc::new(JwtTokenUtil::new(config)) as DynJwtUtil;
+        let jwt_util = Arc::new(JwtTokenUtil::new(config.clone())) as DynJwtUtil;
 
         info!("实用服务已初始化，正在构建要素服务...");
         // dao层服务
@@ -53,11 +53,13 @@ impl Services {
             as DynSessionsService;
 
         let users = Arc::new(UsersService::new(
+            config.clone(),
             repository.clone(),
             security_service,
             jwt_util.clone(),
             sessions.clone(),
             cache_repository.clone(),
+            ai_client,
         )) as DynUsersService;
 
         let categories =

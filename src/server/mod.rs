@@ -30,6 +30,7 @@ use crate::server::services::seed_services::SeedService;
 use crate::server::services::Services;
 use crate::utils::HttpClient;
 use crate::SimpleCache;
+use crate::OpenAiClient;
 
 lazy_static! {
     static ref HTTP_TIMEOUT: u64 = 30;
@@ -40,12 +41,12 @@ lazy_static! {
 pub struct ApplicationServer;
 
 impl ApplicationServer {
-    pub async fn serve(config: Arc<AppConfig>, db: Database, cache: SimpleCache) -> anyhow::Result<()> {
+    pub async fn serve(config: Arc<AppConfig>, db: Database, cache: SimpleCache, ai_client: OpenAiClient) -> anyhow::Result<()> {
 
         // HTTP初始化
         let http_client = HttpClient::connect(config.http_time_out).await
         .expect("could not initialize the http client connect");
-        let services = Services::new(db, cache, http_client, config.clone());
+        let services = Services::new(db, cache, http_client, config.clone(), ai_client);
         
         if config.seed {
             // TODO: 创建测试数据
