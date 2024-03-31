@@ -7,6 +7,7 @@ use crate::{
         services::{
             category_services::CategoriesService, session_services::SessionsService,
             user_services::UsersService,
+            ai_services::OpenAisService,
         },
         utils::{
             argon_utils::{ArgonSecurityUtil, DynArgonUtil},
@@ -18,6 +19,7 @@ use crate::{
 use self::{
     category_services::DynCategoriesService, session_services::DynSessionsService,
     user_services::DynUsersService,
+    ai_services::DynOpenAisService,
 };
 
 use super::utils::jwt_utils::DynJwtUtil;
@@ -26,6 +28,7 @@ pub mod category_services;
 pub mod seed_services;
 pub mod session_services;
 pub mod user_services;
+pub mod ai_services;
 
 #[derive(Clone)]
 pub struct Services {
@@ -33,6 +36,7 @@ pub struct Services {
     pub users: DynUsersService, // 用户服务
     pub sessions: DynSessionsService, // session服务
     pub categories: DynCategoriesService, // 类别服务
+    pub openais: DynOpenAisService, //openai服务
 }
 
 impl Services {
@@ -59,17 +63,20 @@ impl Services {
             jwt_util.clone(),
             sessions.clone(),
             cache_repository.clone(),
-            ai_client,
+            ai_client.clone(),
         )) as DynUsersService;
 
         let categories =
             Arc::new(CategoriesService::new(repository.clone())) as DynCategoriesService;
+
+        let openais = Arc::new(OpenAisService::new(config.clone(), repository.clone(), cache_repository.clone(), ai_client.clone())) as DynOpenAisService;
 
         Self {
             jwt_util,
             users,
             sessions,
             categories,
+            openais,
         }
     }
 }

@@ -1,5 +1,5 @@
--- add the article tables
-drop type if exists category_type;
+-- -- add the article tables
+-- drop type if exists category_type;
 
 create type category_type as ENUM (
   'Essential','NonEssential'

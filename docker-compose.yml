@@ -21,6 +21,17 @@ services:
       - ./volumes/database_redis-data:/data
     ports:
       - '6379:6379'
+  postgres-pgvector:
+    image: ankane/pgvector:latest
+    container_name: pgvector-server
+    restart: always
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgvector
+    volumes:
+      - ./volumes/database_pgvector-data:/var/lib/postgresql/data
 networks:
   rust:
     ipam:

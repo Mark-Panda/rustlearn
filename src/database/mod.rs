@@ -5,6 +5,7 @@ mod open_ai_client;
 pub mod category;
 pub mod session;
 pub mod user;
+pub mod openai;
 
 
 pub use cache::*;
