@@ -38,14 +38,12 @@ impl Services {
         let repository = Arc::new(db);
         let cache_repository = Arc::new(cache);
 
-        // http请求 TODO: 待组合
-        let _http_client_repository = Arc::new(http_client);
-
         let openais = Arc::new(OpenAisService::new(
             config.clone(),
             repository.clone(),
             cache_repository.clone(),
             ai_client.clone(),
+            http_client.clone(),
         )) as DynOpenAisService;
 
         Self { jwt_util, openais }

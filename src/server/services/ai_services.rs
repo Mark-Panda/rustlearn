@@ -1,14 +1,22 @@
+use async_openai::types::{
+    ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestSystemMessageArgs,
+    ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs,
+};
 use std::sync::Arc;
-use async_openai::types::{ChatCompletionRequestAssistantMessageArgs, ChatCompletionRequestSystemMessageArgs, ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs};
 
-use crate::{config::AppConfig, dtos::ai_dto::{ChatMessageDto, ResponseChatMessageDto}, openai::DynOpenAisRepository, OpenAiClient};
+use crate::{
+    config::AppConfig,
+    dtos::ai_dto::{ChatMessageDto, ResponseChatMessageDto},
+    openai::DynOpenAisRepository,
+    utils::HttpClient,
+    OpenAiClient,
+};
 use async_trait::async_trait;
 
 use crate::{
     server::error::{AppResult, Error},
     DynRedisClientExt,
 };
-
 
 /// A reference counter for our user service allows us safely pass instances user utils
 /// around which themselves depend on the user repostiory, and ultimately, our Posgres connection pool.
@@ -30,7 +38,10 @@ pub struct OpenAisService {
     config: Arc<AppConfig>,
     // 允许 ai_client 字段未被读取
     #[allow(dead_code)]
-    ai_client: OpenAiClient,
+    ai: OpenAiClient,
+    // 允许 http_repository 字段未被读取
+    #[allow(dead_code)]
+    http_repository: HttpClient,
 }
 
 impl OpenAisService {
@@ -38,13 +49,15 @@ impl OpenAisService {
         config: Arc<AppConfig>,
         repository: DynOpenAisRepository,
         cache: DynRedisClientExt,
-        ai_client: OpenAiClient,
+        ai: OpenAiClient,
+        http_repository: HttpClient,
     ) -> Self {
         Self {
             config,
             repository,
             cache,
-            ai_client,
+            ai,
+            http_repository,
         }
     }
 }
@@ -55,30 +68,35 @@ impl OpenAisServiceTrait for OpenAisService {
         let chat_id = request.chat_id.unwrap();
         let req_message = request.message.unwrap();
         let request = CreateChatCompletionRequestArgs::default()
-        .max_tokens(512u16)
-        .model("gpt-3.5-turbo")
-        .messages([
-            ChatCompletionRequestSystemMessageArgs::default()
-                .content("You are a helpful assistant.")
-                .build().unwrap()
-                .into(),
-            ChatCompletionRequestUserMessageArgs::default()
-                .content("Who won the world series in 2020?")
-                .build().unwrap()
-                .into(),
-            ChatCompletionRequestAssistantMessageArgs::default()
-                .content("The Los Angeles Dodgers won the World Series in 2020.")
-                .build().unwrap()
-                .into(),
-            ChatCompletionRequestUserMessageArgs::default()
-                .content("Where was it played?")
-                .build().unwrap()
-                .into(),
-        ])
-        .build().unwrap();
+            .max_tokens(512u16)
+            .model("gpt-3.5-turbo")
+            .messages([
+                ChatCompletionRequestSystemMessageArgs::default()
+                    .content("You are a helpful assistant.")
+                    .build()
+                    .unwrap()
+                    .into(),
+                ChatCompletionRequestUserMessageArgs::default()
+                    .content("Who won the world series in 2020?")
+                    .build()
+                    .unwrap()
+                    .into(),
+                ChatCompletionRequestAssistantMessageArgs::default()
+                    .content("The Los Angeles Dodgers won the World Series in 2020.")
+                    .build()
+                    .unwrap()
+                    .into(),
+                ChatCompletionRequestUserMessageArgs::default()
+                    .content("Where was it played?")
+                    .build()
+                    .unwrap()
+                    .into(),
+            ])
+            .build()
+            .unwrap();
         println!("消息{}", serde_json::to_string(&request).unwrap());
-            
-        let ai_res = self.ai_client.client.chat().create(request).await;
+
+        let ai_res = self.ai.client.chat().create(request).await;
         match ai_res {
             Ok(success_value) => {
                 // 处理成功的情况
@@ -90,20 +108,20 @@ impl OpenAisServiceTrait for OpenAisService {
                         choice.index, choice.message.role, choice.message.content
                     );
                 }
-            },
+            }
             Err(error) => {
                 // 处理错误的情况
                 println!("Error: {:?}", error);
                 // 可以决定如何处理错误，例如返回、重试或记录错误等
                 return Err(Error::ObjectConflict(format!("openai请求错误")));
-            },
+            }
         }
-        
-        let create_chat_result = self.repository.create_openai(&chat_id, &req_message).await?;
+
+        let create_chat_result = self
+            .repository
+            .create_openai(&chat_id, &req_message)
+            .await?;
         // TODO: 不能引用use anyhow::Ok; 否则报错，用的是AppResult
         Ok(create_chat_result.into_dto())
     }
-
 }
-
-
