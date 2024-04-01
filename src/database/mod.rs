@@ -1,12 +1,8 @@
-mod connection;
 mod cache;
+mod connection;
 mod open_ai_client;
 
-pub mod category;
-pub mod session;
-pub mod user;
 pub mod openai;
-
 
 pub use cache::*;
 pub use connection::*;

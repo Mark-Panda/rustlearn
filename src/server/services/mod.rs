@@ -3,46 +3,34 @@ use std::sync::Arc;
 use tracing::info;
 
 use crate::{
-    config::AppConfig, database::Database, server::{
-        services::{
-            category_services::CategoriesService, session_services::SessionsService,
-            user_services::UsersService,
-            ai_services::OpenAisService,
-        },
-        utils::{
-            argon_utils::{ArgonSecurityUtil, DynArgonUtil},
-            jwt_utils::JwtTokenUtil,
-        },
-    }, utils::HttpClient, OpenAiClient, SimpleCache
+    config::AppConfig,
+    database::Database,
+    server::{services::ai_services::OpenAisService, utils::jwt_utils::JwtTokenUtil},
+    utils::HttpClient,
+    OpenAiClient, SimpleCache,
 };
 
-use self::{
-    category_services::DynCategoriesService, session_services::DynSessionsService,
-    user_services::DynUsersService,
-    ai_services::DynOpenAisService,
-};
+use self::ai_services::DynOpenAisService;
 
 use super::utils::jwt_utils::DynJwtUtil;
 
-pub mod category_services;
-pub mod seed_services;
-pub mod session_services;
-pub mod user_services;
 pub mod ai_services;
 
 #[derive(Clone)]
 pub struct Services {
-    pub jwt_util: DynJwtUtil, // 认证鉴权服务
-    pub users: DynUsersService, // 用户服务
-    pub sessions: DynSessionsService, // session服务
-    pub categories: DynCategoriesService, // 类别服务
+    pub jwt_util: DynJwtUtil,       // 认证鉴权服务
     pub openais: DynOpenAisService, //openai服务
 }
 
 impl Services {
-    pub fn new(db: Database, cache: SimpleCache, http_client: HttpClient, config: Arc<AppConfig>, ai_client: OpenAiClient) -> Self {
+    pub fn new(
+        db: Database,
+        cache: SimpleCache,
+        http_client: HttpClient,
+        config: Arc<AppConfig>,
+        ai_client: OpenAiClient,
+    ) -> Self {
         info!("初始化实用服务...");
-        let security_service = Arc::new(ArgonSecurityUtil::new(config.clone())) as DynArgonUtil;
         let jwt_util = Arc::new(JwtTokenUtil::new(config.clone())) as DynJwtUtil;
 
         info!("实用服务已初始化，正在构建要素服务...");
@@ -53,30 +41,13 @@ impl Services {
         // http请求 TODO: 待组合
         let _http_client_repository = Arc::new(http_client);
 
-        let sessions = Arc::new(SessionsService::new(repository.clone(), jwt_util.clone()))
-            as DynSessionsService;
-
-        let users = Arc::new(UsersService::new(
+        let openais = Arc::new(OpenAisService::new(
             config.clone(),
             repository.clone(),
-            security_service,
-            jwt_util.clone(),
-            sessions.clone(),
             cache_repository.clone(),
             ai_client.clone(),
-        )) as DynUsersService;
+        )) as DynOpenAisService;
 
-        let categories =
-            Arc::new(CategoriesService::new(repository.clone())) as DynCategoriesService;
-
-        let openais = Arc::new(OpenAisService::new(config.clone(), repository.clone(), cache_repository.clone(), ai_client.clone())) as DynOpenAisService;
-
-        Self {
-            jwt_util,
-            users,
-            sessions,
-            categories,
-            openais,
-        }
+        Self { jwt_util, openais }
     }
 }
