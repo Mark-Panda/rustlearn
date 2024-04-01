@@ -1,12 +1,13 @@
-use std::{sync::Arc, time::SystemTime};
 use async_trait::async_trait;
 use sqlx::types::time::OffsetDateTime;
 use sqlx::FromRow;
+use std::{sync::Arc, time::SystemTime};
 use uuid::{uuid, Uuid};
 
 #[derive(FromRow, Debug)]
 pub struct OpenAi {
     pub id: Uuid,
+    // TODO: 如果字段为空的情况 都得Option转
     pub chat_id: String,
     pub message: String,
     pub created_at: OffsetDateTime,
@@ -33,11 +34,6 @@ pub type DynOpenAisRepository = Arc<dyn OpenAisRepository + Send + Sync>;
 
 #[async_trait]
 pub trait OpenAisRepository {
-    async fn create_openai(
-        &self,
-        chat_id: &str,
-        message: &str,
-    ) -> anyhow::Result<OpenAi>;
+    async fn create_openai(&self, chat_id: &str, message: &str) -> anyhow::Result<OpenAi>;
     async fn get_message_by_chat_id(&self, chat_id: &str) -> anyhow::Result<Option<OpenAi>>;
-
 }

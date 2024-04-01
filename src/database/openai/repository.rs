@@ -8,8 +8,7 @@ use super::{OpenAi, OpenAisRepository};
 
 #[async_trait]
 impl OpenAisRepository for Database {
-
-    async fn create_openai(&self,chat_id: &str,message: &str,)-> anyhow::Result<OpenAi>{
+    async fn create_openai(&self, chat_id: &str, message: &str) -> anyhow::Result<OpenAi> {
         query_as!(
             OpenAi,
             r#"
@@ -39,6 +38,4 @@ impl OpenAisRepository for Database {
         .await
         .context("unexpected error while querying for openais by chat_id")
     }
-    
-    
 }

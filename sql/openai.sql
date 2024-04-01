@@ -1,8 +1,8 @@
 
 CREATE TABLE "public"."openais" (
      "id" uuid DEFAULT uuid_generate_v4 (),
-     "chat_id" varchar(64) COLLATE "pg_catalog"."default",
-     "message"  text,
+     "chat_id" varchar(64) NOT NULL COLLATE "pg_catalog"."default",
+     "message"  text NOT NULL,
      "created_at" timestamptz(6) NOT NULL DEFAULT now(),
      "updated_at" timestamptz(6) NOT NULL DEFAULT now(),
      "deleted_at" timestamptz(6),
