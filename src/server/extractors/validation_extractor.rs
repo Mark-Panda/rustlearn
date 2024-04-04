@@ -9,10 +9,9 @@
 
 // use crate::server::error::Error;
 
-
 use async_trait::async_trait;
 use axum::{
-    extract::{rejection::JsonRejection, Json, FromRequest, Request},
+    extract::{rejection::JsonRejection, FromRequest, Json, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
 };

@@ -20,7 +20,6 @@ pub struct ChatMessageDto {
     pub message: Option<String>,
 }
 
-
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct ResponseChatMessageDto {
     pub chat_id: String,

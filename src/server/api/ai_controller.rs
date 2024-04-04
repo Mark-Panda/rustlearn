@@ -12,8 +12,7 @@ pub struct OpenAiController;
 
 impl OpenAiController {
     pub fn app() -> Router {
-        Router::new()
-            .route("/chat", post(Self::chat_message_endpoint))
+        Router::new().route("/chat", post(Self::chat_message_endpoint))
     }
 
     pub async fn chat_message_endpoint(
@@ -30,5 +29,4 @@ impl OpenAiController {
 
         Ok(Json(created_user))
     }
-    
 }

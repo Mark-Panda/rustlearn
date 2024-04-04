@@ -1,12 +1,12 @@
-use std::ops::Add;
-use std::sync::Arc;
-use std::time::{Duration, SystemTime};
+use crate::config::AppConfig;
+use crate::server::error::{AppResult, Error};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use sqlx::types::time::OffsetDateTime;
+use std::ops::Add;
+use std::sync::Arc;
+use std::time::{Duration, SystemTime};
 use uuid::Uuid;
-use crate::config::AppConfig;
-use crate::server::error::{AppResult, Error};
 
 /// A security service for handling JWT authentication.
 pub type DynJwtUtil = Arc<dyn JwtUtil + Send + Sync>;

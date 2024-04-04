@@ -4,7 +4,7 @@ use anyhow::Result;
 use async_openai::{config::OpenAIConfig, Client};
 
 /// OpenAI API client wrapper
-#[derive( Clone)]
+#[derive(Clone)]
 pub struct OpenAiClient {
     // 使用 Arc 来共享 Client 实例
     pub client: Arc<Client<OpenAIConfig>>,
