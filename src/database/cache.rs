@@ -1,7 +1,7 @@
 use crate::{error::AppResult, server::error::Error};
 use anyhow::Result;
 use async_trait::async_trait;
-use redis::{AsyncCommands, Client, RedisError};
+use redis::{Client, RedisError};
 use std::sync::Arc;
 use tracing::info;
 
