@@ -16,7 +16,7 @@ dotenvy = "0.15.6"
 http-body = "1.0.0"
 jsonwebtoken = "9.2.0"
 lazy_static = "1.4.0"
-metrics = "0.22.0"
+metrics = "0.23.0"
 rust-argon2 = "2.1.0"
 serde = { version = "1.0.155", features = ["derive"] }
 serde_json = "1.0.94"
@@ -42,4 +42,4 @@ redis = { version = "0.25.2", features = [
 ] }
 reqwest = { version = "0.12.2", features = ["json", "multipart", "stream"] }
 # openai-api-rs = "4.0.8"
-async-openai = "0.20.0" # 只能使用openai的官方账号 因为openai_api_base不能自定义
+async-openai = "0.23.3" # 只能使用openai的官方账号 因为openai_api_base不能自定义
