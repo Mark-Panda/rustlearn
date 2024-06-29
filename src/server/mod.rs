@@ -23,6 +23,7 @@ use tokio::time::Instant;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::{cors::Any, cors::CorsLayer, trace::TraceLayer};
 use tracing::{debug, info};
+use metrics::{counter, histogram};
 
 use crate::config::AppConfig;
 use crate::database::Database;
@@ -116,6 +117,7 @@ impl ApplicationServer {
         }
     }
 
+    // 链路追踪指标
     async fn track_metrics(request: Request, next: Next) -> impl IntoResponse {
         let path = if let Some(matched_path) = request.extensions().get::<MatchedPath>() {
             matched_path.as_str().to_owned()
@@ -136,8 +138,8 @@ impl ApplicationServer {
             ("latency", latency.to_string()),
         ];
 
-        metrics::counter!("http_requests_total", &labels);
-        metrics::histogram!("http_requests_duration_seconds", &labels);
+        counter!("http_requests_total", &labels).increment(1);
+        histogram!("http_requests_duration_seconds", &labels).record(70.0);
 
         response
     }
