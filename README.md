@@ -19,4 +19,4 @@
 - [ ] kafka集成
 - [ ] restful与protoc集成
 - [ ] cron集成
-- [ ] nacos集成
+- [ ] nacos集成 [r-nacos](https://github.com/nacos-group/r-nacos?tab=readme-ov-file) docker运行 服务注册待开发
