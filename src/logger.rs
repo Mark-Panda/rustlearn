@@ -22,8 +22,8 @@ impl Logger {
         };
 
         let (non_blocking, guard) = match cargo_env {
-            CargoEnv::Development => tracing_appender::non_blocking(console_logger),
-            CargoEnv::Production => tracing_appender::non_blocking(file_logger),
+            CargoEnv::Development => tracing_appender::non_blocking(console_logger), // 开发环境打印在控制台
+            CargoEnv::Production => tracing_appender::non_blocking(file_logger), // 生产环境打印到文件中
         };
 
         tracing_subscriber::fmt()
