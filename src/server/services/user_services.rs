@@ -13,7 +13,8 @@ use crate::{
         error::{AppResult, Error},
         utils::{argon_utils::DynArgonUtil, jwt_utils::DynJwtUtil},
     },
-    user::DynUsersRepository, DynRedisClientExt,
+    user::DynUsersRepository,
+    DynRedisClientExt,
 };
 
 use super::session_services::DynSessionsService;
@@ -71,7 +72,7 @@ impl UsersService {
 #[async_trait]
 impl UsersServiceTrait for UsersService {
     async fn signup_user(&self, request: SignUpUserDto) -> AppResult<ResponseUserDto> {
-        let _ = self.cache.set("test", "test_data", 10000).await;
+        let _ = self.cache.set_ex("test", "test_data", 10000).await;
         let cache_str = self.cache.get("test").await.unwrap();
         if let Some(string) = cache_str {
             info!("缓存结果{}", string);
