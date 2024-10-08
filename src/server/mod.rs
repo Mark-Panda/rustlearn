@@ -4,10 +4,10 @@ pub mod error;
 pub mod extractors;
 pub mod services;
 pub mod utils;
-use tokio::signal::unix::{signal, SignalKind};
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::signal::unix::{signal, SignalKind};
 
 use anyhow::{Context, Ok};
 use axum::extract::{MatchedPath, Request};
@@ -18,6 +18,7 @@ use axum::routing::get;
 use axum::Extension;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, Router};
 use lazy_static::lazy_static;
+use metrics::{counter, histogram};
 use serde_json::json;
 use tokio::time::Instant;
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
@@ -40,13 +41,17 @@ lazy_static! {
 pub struct ApplicationServer;
 
 impl ApplicationServer {
-    pub async fn serve(config: Arc<AppConfig>, db: Database, cache: SimpleCache) -> anyhow::Result<()> {
-
+    pub async fn serve(
+        config: Arc<AppConfig>,
+        db: Database,
+        cache: SimpleCache,
+    ) -> anyhow::Result<()> {
         // HTTP初始化
-        let http_client = HttpClient::connect(config.http_time_out).await
-        .expect("could not initialize the http client connect");
+        let http_client = HttpClient::connect(config.http_time_out)
+            .await
+            .expect("could not initialize the http client connect");
         let services = Services::new(db, cache, http_client, config.clone());
-        
+
         if config.seed {
             // TODO: 创建测试数据
             info!("seeding enabled, creating test data...");
@@ -140,8 +145,8 @@ impl ApplicationServer {
             ("latency", latency.to_string()),
         ];
 
-        metrics::counter!("http_requests_total", &labels);
-        metrics::histogram!("http_requests_duration_seconds", &labels);
+        counter!("http_requests_total", &labels).increment(1);
+        histogram!("http_requests_duration_seconds", &labels).record(70.0);
 
         response
     }
