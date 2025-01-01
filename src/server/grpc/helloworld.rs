@@ -45,16 +45,16 @@ impl HelloWorldGrpcService for HelloWorldGrpcServiceImpl {
         // 添加详细日志
         tracing::info!("Received gRPC request: {:?}", request);
         let key = "key";
-        let value = self
+        let redis_value = self
             .cache
             .get(key)
             .await
             .map_err(|e| Status::internal(e.to_string()))?
             .unwrap_or_else(|| "默认值".to_string());
-        tracing::debug!("Processing request for name: {}", value);
-
+        tracing::debug!("Processing request for name: {}", redis_value);
+        let value = request.into_inner().name;
         let reply = HelloWorldResponse {
-            message: format!("Hello {}!", "world"),
+            message: format!("Hello {}!", value),
         };
 
         tracing::info!("Sending response: {:?}", reply);
