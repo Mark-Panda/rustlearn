@@ -1,6 +1,11 @@
 use tonic::{Request, Response, Status};
 
-use crate::{config::AppConfig, utils::HttpClient, RedisClientExt, SimpleCache};
+use crate::{
+    config::AppConfig,
+    server::{dtos::ai_dto::ChatMessageDto, services::ai_services::DynOpenAisService},
+    utils::HttpClient,
+    SimpleCache,
+};
 use std::sync::Arc;
 
 // 引入生成的代码
@@ -21,14 +26,21 @@ pub struct UserGrpcServiceImpl {
     // // 允许 http_repository 字段未被读取
     #[allow(dead_code)]
     http_repository: HttpClient,
+    openais: DynOpenAisService,
 }
 
 impl UserGrpcServiceImpl {
-    pub fn new(config: Arc<AppConfig>, cache: SimpleCache, http_repository: HttpClient) -> Self {
+    pub fn new(
+        config: Arc<AppConfig>,
+        cache: SimpleCache,
+        http_repository: HttpClient,
+        openais: DynOpenAisService,
+    ) -> Self {
         Self {
             config,
             cache,
             http_repository,
+            openais,
         }
     }
 }
@@ -43,17 +55,20 @@ impl UserGrpcService for UserGrpcServiceImpl {
         // 添加详细日志
         tracing::info!("Received gRPC request: {:?}", request);
 
-        let key = "key";
-        let value = self
-            .cache
-            .get(key)
+        // 调用 AI 服务
+        let chat_request = ChatMessageDto {
+            chat_id: Some("test_chat".to_string()),
+            message: Some(request.into_inner().request_msg),
+        };
+
+        let chat_result = self
+            .openais
+            .chat_message(chat_request)
             .await
-            .map_err(|e| Status::internal(e.to_string()))?
-            .unwrap_or_else(|| "默认值".to_string());
-        tracing::debug!("Processing request for name: {}", value);
+            .map_err(|e| Status::internal(e.to_string()))?;
 
         let reply = UserResponse {
-            message: format!("Hello {}!", "world"),
+            message: chat_result.message,
         };
 
         tracing::info!("Sending response: {:?}", reply);

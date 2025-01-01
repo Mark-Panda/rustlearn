@@ -96,6 +96,7 @@ impl ApplicationServer {
             config.clone(),
             cache_for_grpc.clone(),
             http_client_for_grpc.clone(),
+            services.openais.clone(),
         ));
         let helloworld_service = HelloWorldGrpcServiceServer::new(HelloWorldGrpcServiceImpl::new(
             config.clone(),

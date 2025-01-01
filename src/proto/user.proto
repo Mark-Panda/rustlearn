@@ -3,7 +3,7 @@ package grpc.service;
 
 // 请求消息
 message UserRequest {
-    string name = 1;
+    string request_msg = 1;
 }
 
 // 响应消息
