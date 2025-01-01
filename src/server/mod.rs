@@ -12,6 +12,11 @@ use tokio::signal::unix::{signal, SignalKind};
 
 use crate::config::AppConfig;
 use crate::database::Database;
+use crate::grpc::{
+    helloworld_proto::hello_world_grpc_service_server::HelloWorldGrpcServiceServer,
+    service_proto::your_grpc_service_server::YourGrpcServiceServer, HelloWorldGrpcServiceImpl,
+    YourGrpcServiceImpl,
+};
 use crate::server::services::Services;
 use crate::utils::HttpClient;
 use crate::OpenAiClient;
@@ -33,9 +38,6 @@ use tonic::transport::Server as TonicServer; // 添加 tonic 导入
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::{cors::Any, cors::CorsLayer, trace::TraceLayer};
 use tracing::{debug, info};
-
-use crate::grpc::proto::your_grpc_service_server::YourGrpcServiceServer;
-use crate::grpc::YourGrpcServiceImpl;
 
 lazy_static! {
     static ref HTTP_TIMEOUT: u64 = 30;
@@ -89,6 +91,8 @@ impl ApplicationServer {
         // let services_clone = services.clone();
         // 创建 gRPC 服务器
         let grpc_service = YourGrpcServiceServer::new(YourGrpcServiceImpl::new(config.clone()));
+        let helloworld_service =
+            HelloWorldGrpcServiceServer::new(HelloWorldGrpcServiceImpl::new(config.clone()));
 
         let port = config.port;
         let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
@@ -100,6 +104,7 @@ impl ApplicationServer {
         tokio::spawn(Self::run_grpc_server(
             format!("{}:{}", config.grpc_host, config.grpc_port),
             grpc_service,
+            helloworld_service,
         ));
 
         // let grpc_addr = format!("{}:{}", config.grpc_host, config.grpc_port);
@@ -147,6 +152,7 @@ impl ApplicationServer {
     async fn run_grpc_server<A: ToSocketAddrs>(
         addr: A,
         service: YourGrpcServiceServer<YourGrpcServiceImpl>,
+        helloworld_service: HelloWorldGrpcServiceServer<HelloWorldGrpcServiceImpl>,
     ) -> anyhow::Result<()> {
         let addr = addr.to_socket_addrs()?.next().unwrap();
         info!("gRPC server listening on {}", addr);
@@ -176,6 +182,7 @@ impl ApplicationServer {
         TonicServer::builder()
             .trace_fn(|_| tracing::info_span!("grpc")) // 添加跟踪
             .add_service(service)
+            .add_service(helloworld_service)
             .serve(addr)
             .await
             .context("error while starting gRPC server")?;
