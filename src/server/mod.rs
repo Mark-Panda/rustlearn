@@ -2,6 +2,7 @@ mod api;
 pub mod dtos;
 pub mod error;
 pub mod extractors;
+pub mod grpc;
 pub mod services;
 pub mod utils;
 use std::net::{Ipv4Addr, SocketAddr};
@@ -9,6 +10,12 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::signal::unix::{signal, SignalKind};
 
+use crate::config::AppConfig;
+use crate::database::Database;
+use crate::server::services::Services;
+use crate::utils::HttpClient;
+use crate::OpenAiClient;
+use crate::SimpleCache;
 use anyhow::{Context, Ok};
 use axum::extract::{MatchedPath, Request};
 use axum::http::HeaderValue;
@@ -18,19 +25,17 @@ use axum::routing::get;
 use axum::Extension;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, Router};
 use lazy_static::lazy_static;
+use metrics::{counter, histogram};
 use serde_json::json;
+use std::net::ToSocketAddrs;
 use tokio::time::Instant;
+use tonic::transport::Server as TonicServer; // 添加 tonic 导入
 use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::{cors::Any, cors::CorsLayer, trace::TraceLayer};
 use tracing::{debug, info};
-use metrics::{counter, histogram};
 
-use crate::config::AppConfig;
-use crate::database::Database;
-use crate::server::services::Services;
-use crate::utils::HttpClient;
-use crate::OpenAiClient;
-use crate::SimpleCache;
+use crate::grpc::proto::your_grpc_service_server::YourGrpcServiceServer;
+use crate::grpc::YourGrpcServiceImpl;
 
 lazy_static! {
     static ref HTTP_TIMEOUT: u64 = 30;
@@ -52,6 +57,7 @@ impl ApplicationServer {
             .await
             .expect("could not initialize the http client connect");
         let services = Services::new(db, cache, http_client, config.clone(), ai_client);
+        let services_for_extension = services.clone();
 
         let cors_origin = &config.cors_origin;
 
@@ -71,7 +77,7 @@ impl ApplicationServer {
                     .layer(HandleErrorLayer::new(Self::handle_timeout_error))
                     .timeout(Duration::from_secs(*HTTP_TIMEOUT)) // 超时处理
                     .layer(cors) // 跨域
-                    .layer(Extension(services)) // 扩展服务
+                    .layer(Extension(services_for_extension)) // 使用克隆的版本
                     .layer(BufferLayer::new(1024)) // buffer限制
                     .layer(RateLimitLayer::new(5, Duration::from_secs(1))), // 请求限流
             )
@@ -80,20 +86,101 @@ impl ApplicationServer {
         // 404处理
         let router = router.fallback(Self::handle_404);
 
+        // let services_clone = services.clone();
+        // 创建 gRPC 服务器
+        let grpc_service = YourGrpcServiceServer::new(YourGrpcServiceImpl::new(config.clone()));
+
         let port = config.port;
         let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
 
         info!("🚀 Server has launched on https://{addr}");
         debug!("routes initialized, listening on port {}", port);
-        let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-        axum::serve(listener, router.into_make_service())
-            .with_graceful_shutdown(Self::shutdown_signal())
-            .await
-            .context("error while starting API server")?;
+        // // 启动两个服务器
+        tokio::spawn(Self::run_rest_server(addr, router.clone()));
+        tokio::spawn(Self::run_grpc_server(
+            format!("{}:{}", config.grpc_host, config.grpc_port),
+            grpc_service,
+        ));
 
+        // let grpc_addr = format!("{}:{}", config.grpc_host, config.grpc_port);
+        // tracing::info!("Initializing gRPC server on {}", grpc_addr);
+
+        // // 分别启动 REST 和 gRPC 服务器
+        // let rest_handle = tokio::spawn(Self::run_rest_server(addr, router));
+        // let grpc_handle = tokio::spawn(Self::run_grpc_server(grpc_addr, grpc_service));
+
+        // // 等待任一服务器完成或出错
+        // tokio::select! {
+        //     rest_result = rest_handle => {
+        //         if let Err(e) = rest_result {
+        //             tracing::error!("REST server error: {:?}", e);
+        //         }
+        //     }
+        //     grpc_result = grpc_handle => {
+        //         if let Err(e) = grpc_result {
+        //             tracing::error!("gRPC server error: {:?}", e);
+        //         }
+        //     }
+        // }
+
+        // 等待关闭信号
+        Self::shutdown_signal().await;
+        Ok(())
+        // let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+        // axum::serve(listener, router.into_make_service())
+        //     .with_graceful_shutdown(Self::shutdown_signal())
+        //     .await
+        //     .context("error while starting API server")?;
+
+        // Ok(())
+    }
+
+    async fn run_rest_server(addr: SocketAddr, router: Router) -> anyhow::Result<()> {
+        let listener = tokio::net::TcpListener::bind(addr).await?;
+        info!("REST server listening on {}", addr);
+        axum::serve(listener, router.into_make_service())
+            .await
+            .context("error while starting REST server")?;
         Ok(())
     }
 
+    async fn run_grpc_server<A: ToSocketAddrs>(
+        addr: A,
+        service: YourGrpcServiceServer<YourGrpcServiceImpl>,
+    ) -> anyhow::Result<()> {
+        let addr = addr.to_socket_addrs()?.next().unwrap();
+        info!("gRPC server listening on {}", addr);
+
+        // TonicServer::builder()
+        //     .trace_fn(
+        //         |headers| tracing::info_span!("grpc", request_id = ?axum::http::Request::<()>::get("x-request-id")),
+        //     )
+        //     .max_concurrent_streams(1024)
+        //     .tcp_keepalive(Some(std::time::Duration::from_secs(60)))
+        //     .tcp_nodelay(true)
+        //     .add_service(service)
+        //     .serve(addr)
+        //     .await
+        //     .context("error while starting gRPC server")?;
+        // Ok(())
+
+        // TonicServer::builder()
+        //     .accept_http1(true) // 允许 HTTP/1.1
+        //     .tcp_keepalive(Some(std::time::Duration::from_secs(60)))
+        //     .tcp_nodelay(true)
+        //     .add_service(service)
+        //     .serve(addr)
+        //     .await
+        //     .context("error while starting gRPC server")?;
+        // Ok(())
+        TonicServer::builder()
+            .trace_fn(|_| tracing::info_span!("grpc")) // 添加跟踪
+            .add_service(service)
+            .serve(addr)
+            .await
+            .context("error while starting gRPC server")?;
+        Ok(())
+    }
     /// TODO: axum常用中间件链接 Adds a custom handler for tower's `TimeoutLayer`, see https://docs.rs/axum/latest/axum/middleware/index.html#commonly-used-middleware.
     async fn handle_timeout_error(err: BoxError) -> (StatusCode, Json<serde_json::Value>) {
         if err.is::<tower::timeout::error::Elapsed>() {

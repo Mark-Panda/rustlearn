@@ -12,6 +12,12 @@ pub struct AppConfig {
     #[clap(long, env, default_value = "9000")]
     pub port: u16,
 
+    #[clap(long, env, default_value = "0.0.0.0")]
+    pub grpc_host: String,
+
+    #[clap(long, env, default_value = "9001")]
+    pub grpc_port: u16,
+
     #[clap(long, env)]
     pub database_url: String,
 

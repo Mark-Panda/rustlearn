@@ -1,0 +1,27 @@
+syntax = "proto3";
+package grpc.service;
+
+// 请求消息
+message HelloRequest {
+    string name = 1;
+}
+
+// 响应消息
+message HelloResponse {
+    string message = 1;
+}
+
+// 定义服务
+service YourGrpcService {
+    // 一个简单的 RPC 方法
+    rpc SayHello(HelloRequest) returns (HelloResponse);
+
+    // 服务端流式 RPC
+    rpc ServerStream(HelloRequest) returns (stream HelloResponse);
+
+    // 客户端流式 RPC
+    rpc ClientStream(stream HelloRequest) returns (HelloResponse);
+
+    // 双向流式 RPC
+    rpc BidirectionalStream(stream HelloRequest) returns (stream HelloResponse);
+}
