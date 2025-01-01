@@ -1,6 +1,6 @@
 use tonic::{Request, Response, Status};
 
-use crate::config::AppConfig;
+use crate::{config::AppConfig, utils::HttpClient, RedisClientExt, SimpleCache};
 use std::sync::Arc;
 
 // 引入生成的代码
@@ -14,23 +14,23 @@ use proto::{
 
 // #[derive(Clone)]
 pub struct HelloWorldGrpcServiceImpl {
-    // // 允许 cache 字段未被读取
-    // #[allow(dead_code)]
-    // cache: SimpleCache,
+    // 允许 cache 字段未被读取
+    #[allow(dead_code)]
+    cache: SimpleCache,
     // 允许 config 字段未被读取
     #[allow(dead_code)]
     config: Arc<AppConfig>,
-    // // 允许 http_repository 字段未被读取
-    // #[allow(dead_code)]
-    // http_repository: HttpClient,
+    // 允许 http_repository 字段未被读取
+    #[allow(dead_code)]
+    http_repository: HttpClient,
 }
 
 impl HelloWorldGrpcServiceImpl {
-    pub fn new(config: Arc<AppConfig>) -> Self {
+    pub fn new(config: Arc<AppConfig>, cache: SimpleCache, http_repository: HttpClient) -> Self {
         Self {
             config,
-            // cache,
-            // http_repository,
+            cache,
+            http_repository,
         }
     }
 }
@@ -44,12 +44,17 @@ impl HelloWorldGrpcService for HelloWorldGrpcServiceImpl {
     ) -> Result<Response<HelloWorldResponse>, Status> {
         // 添加详细日志
         tracing::info!("Received gRPC request: {:?}", request);
-
-        let name = request.into_inner().name;
-        tracing::debug!("Processing request for name: {}", name);
+        let key = "key";
+        let value = self
+            .cache
+            .get(key)
+            .await
+            .map_err(|e| Status::internal(e.to_string()))?
+            .unwrap_or_else(|| "默认值".to_string());
+        tracing::debug!("Processing request for name: {}", value);
 
         let reply = HelloWorldResponse {
-            message: format!("Hello {}!", name),
+            message: format!("Hello {}!", "world"),
         };
 
         tracing::info!("Sending response: {:?}", reply);

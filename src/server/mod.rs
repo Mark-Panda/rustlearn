@@ -58,6 +58,8 @@ impl ApplicationServer {
         let http_client = HttpClient::connect(config.http_time_out)
             .await
             .expect("could not initialize the http client connect");
+        let http_client_for_grpc = http_client.clone();
+        let cache_for_grpc = cache.clone();
         let services = Services::new(db, cache, http_client, config.clone(), ai_client);
         let services_for_extension = services.clone();
 
@@ -90,9 +92,16 @@ impl ApplicationServer {
 
         // let services_clone = services.clone();
         // 创建 gRPC 服务器
-        let grpc_service = YourGrpcServiceServer::new(YourGrpcServiceImpl::new(config.clone()));
-        let helloworld_service =
-            HelloWorldGrpcServiceServer::new(HelloWorldGrpcServiceImpl::new(config.clone()));
+        let grpc_service = YourGrpcServiceServer::new(YourGrpcServiceImpl::new(
+            config.clone(),
+            cache_for_grpc.clone(),
+            http_client_for_grpc.clone(),
+        ));
+        let helloworld_service = HelloWorldGrpcServiceServer::new(HelloWorldGrpcServiceImpl::new(
+            config.clone(),
+            cache_for_grpc,
+            http_client_for_grpc,
+        ));
 
         let port = config.port;
         let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
