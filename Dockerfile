@@ -10,7 +10,7 @@ RUN     set -eux; \
 
 
 # Run
-FROM    alpine:3.18
+FROM    alpine:3.21
 
 RUN     apk update --quiet \
     && apk add -q --no-cache libgcc tini curl openssl
