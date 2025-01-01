@@ -2,17 +2,17 @@ syntax = "proto3";
 package grpc.service;
 
 // 请求消息
-message HelloRequest {
+message UserRequest {
     string name = 1;
 }
 
 // 响应消息
-message HelloResponse {
+message UserResponse {
     string message = 1;
 }
 
 // 定义服务
-service YourGrpcService {
+service UserGrpcService {
     // 一个简单的 RPC 方法
-    rpc SayHello(HelloRequest) returns (HelloResponse);
+    rpc SayUserHello(UserRequest) returns (UserResponse);
 }

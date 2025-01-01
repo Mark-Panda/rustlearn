@@ -8,10 +8,10 @@ pub mod proto {
     tonic::include_proto!("grpc.service");
 }
 
-use proto::{your_grpc_service_server::YourGrpcService, HelloRequest, HelloResponse};
+use proto::{user_grpc_service_server::UserGrpcService, UserRequest, UserResponse};
 
 // #[derive(Clone)]
-pub struct YourGrpcServiceImpl {
+pub struct UserGrpcServiceImpl {
     // // 允许 cache 字段未被读取
     #[allow(dead_code)]
     cache: SimpleCache,
@@ -23,7 +23,7 @@ pub struct YourGrpcServiceImpl {
     http_repository: HttpClient,
 }
 
-impl YourGrpcServiceImpl {
+impl UserGrpcServiceImpl {
     pub fn new(config: Arc<AppConfig>, cache: SimpleCache, http_repository: HttpClient) -> Self {
         Self {
             config,
@@ -34,12 +34,12 @@ impl YourGrpcServiceImpl {
 }
 
 #[tonic::async_trait]
-impl YourGrpcService for YourGrpcServiceImpl {
+impl UserGrpcService for UserGrpcServiceImpl {
     // 实现简单的 RPC 方法
-    async fn say_hello(
+    async fn say_user_hello(
         &self,
-        request: Request<HelloRequest>,
-    ) -> Result<Response<HelloResponse>, Status> {
+        request: Request<UserRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
         // 添加详细日志
         tracing::info!("Received gRPC request: {:?}", request);
 
@@ -49,10 +49,10 @@ impl YourGrpcService for YourGrpcServiceImpl {
             .get(key)
             .await
             .map_err(|e| Status::internal(e.to_string()))?
-            .unwrap_or_else(|| "default".to_string());
+            .unwrap_or_else(|| "默认值".to_string());
         tracing::debug!("Processing request for name: {}", value);
 
-        let reply = HelloResponse {
+        let reply = UserResponse {
             message: format!("Hello {}!", "world"),
         };
 

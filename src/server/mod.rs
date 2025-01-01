@@ -14,8 +14,8 @@ use crate::config::AppConfig;
 use crate::database::Database;
 use crate::grpc::{
     helloworld_proto::hello_world_grpc_service_server::HelloWorldGrpcServiceServer,
-    service_proto::your_grpc_service_server::YourGrpcServiceServer, HelloWorldGrpcServiceImpl,
-    YourGrpcServiceImpl,
+    user_proto::user_grpc_service_server::UserGrpcServiceServer, HelloWorldGrpcServiceImpl,
+    UserGrpcServiceImpl,
 };
 use crate::server::services::Services;
 use crate::utils::HttpClient;
@@ -92,7 +92,7 @@ impl ApplicationServer {
 
         // let services_clone = services.clone();
         // 创建 gRPC 服务器
-        let grpc_service = YourGrpcServiceServer::new(YourGrpcServiceImpl::new(
+        let user_service = UserGrpcServiceServer::new(UserGrpcServiceImpl::new(
             config.clone(),
             cache_for_grpc.clone(),
             http_client_for_grpc.clone(),
@@ -112,7 +112,7 @@ impl ApplicationServer {
         tokio::spawn(Self::run_rest_server(addr, router.clone()));
         tokio::spawn(Self::run_grpc_server(
             format!("{}:{}", config.grpc_host, config.grpc_port),
-            grpc_service,
+            user_service,
             helloworld_service,
         ));
 
@@ -140,13 +140,6 @@ impl ApplicationServer {
         // 等待关闭信号
         Self::shutdown_signal().await;
         Ok(())
-        // let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-        // axum::serve(listener, router.into_make_service())
-        //     .with_graceful_shutdown(Self::shutdown_signal())
-        //     .await
-        //     .context("error while starting API server")?;
-
-        // Ok(())
     }
 
     async fn run_rest_server(addr: SocketAddr, router: Router) -> anyhow::Result<()> {
@@ -160,7 +153,7 @@ impl ApplicationServer {
 
     async fn run_grpc_server<A: ToSocketAddrs>(
         addr: A,
-        service: YourGrpcServiceServer<YourGrpcServiceImpl>,
+        user_service: UserGrpcServiceServer<UserGrpcServiceImpl>,
         helloworld_service: HelloWorldGrpcServiceServer<HelloWorldGrpcServiceImpl>,
     ) -> anyhow::Result<()> {
         let addr = addr.to_socket_addrs()?.next().unwrap();
@@ -190,7 +183,7 @@ impl ApplicationServer {
         // Ok(())
         TonicServer::builder()
             .trace_fn(|_| tracing::info_span!("grpc")) // 添加跟踪
-            .add_service(service)
+            .add_service(user_service)
             .add_service(helloworld_service)
             .serve(addr)
             .await
