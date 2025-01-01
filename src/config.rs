@@ -1,5 +1,6 @@
 #[derive(clap::ValueEnum, Clone, Debug, Copy)]
 pub enum CargoEnv {
+    Local,
     Development,
     Production,
 }

@@ -17,11 +17,13 @@ impl Logger {
 
         // TODO update the log level filter for own use
         let max_level = match cargo_env {
-            CargoEnv::Development => LevelFilter::DEBUG,
-            CargoEnv::Production => LevelFilter::DEBUG,
+            CargoEnv::Local => LevelFilter::DEBUG,
+            CargoEnv::Development => LevelFilter::INFO,
+            CargoEnv::Production => LevelFilter::INFO,
         };
 
         let (non_blocking, guard) = match cargo_env {
+            CargoEnv::Local => tracing_appender::non_blocking(console_logger),
             CargoEnv::Development => tracing_appender::non_blocking(console_logger),
             CargoEnv::Production => tracing_appender::non_blocking(file_logger),
         };
