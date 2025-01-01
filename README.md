@@ -20,3 +20,21 @@
 - [ ] restful与protoc集成
 - [ ] cron集成
 - [ ] nacos集成
+
+### 基本使用
+
+```bash
+./build.sh
+```
+
+### 指定镜像名称和标签
+
+```bash
+./build.sh -n myapp -t v1.0.0
+```
+
+### 使用自定义 Dockerfile 和构建参数
+
+```bash
+./build.sh -f Dockerfile.prod -b "--build-arg ENV=prod"
+```
