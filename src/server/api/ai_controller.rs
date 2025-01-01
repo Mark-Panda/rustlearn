@@ -5,7 +5,7 @@ use tracing::info;
 
 use crate::dtos::ai_dto::{ChatMessageDto, ResponseChatMessageDto};
 use crate::server::error::AppResult;
-use crate::server::extractors::ValidationExtractor;
+use crate::server::extractors::ValidatedJson;
 use crate::server::services::Services;
 
 pub struct OpenAiController;
@@ -17,7 +17,7 @@ impl OpenAiController {
 
     pub async fn chat_message_endpoint(
         Extension(services): Extension<Services>,
-        ValidationExtractor(request): ValidationExtractor<ChatMessageDto>,
+        ValidatedJson(request): ValidatedJson<ChatMessageDto>,
     ) -> AppResult<Json<ResponseChatMessageDto>> {
         info!(
             "recieved request to create chat {:?}/{:?}",

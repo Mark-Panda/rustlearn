@@ -11,8 +11,8 @@ prost = "0.13.4"
 tokio-stream = "0.1.17"
 anyhow = "1.0.95"
 async-trait = "0.1.83"
-axum = { version = "0.7.9", features = ["tower-log"] }
-axum-extra = { version = "0.9.6", features = ["cookie"] }
+axum = { version = "0.8.0", features = ["tower-log"] }
+axum-extra = { version = "0.10.0", features = ["cookie"] }
 backtrace = "0.3.74"
 clap = { version = "4.5.23", features = ["derive", "env"] }
 dotenvy = "0.15.6"
