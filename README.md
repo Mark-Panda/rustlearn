@@ -17,7 +17,7 @@
 - [x] http请求集成
 - [x] env配置
 - [ ] kafka集成
-- [ ] restful与protoc集成
+- [x] restful与protoc集成
 - [ ] cron集成
 - [ ] nacos集成
 
