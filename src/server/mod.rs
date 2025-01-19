@@ -20,7 +20,7 @@ use crate::grpc::{
 use crate::server::services::Services;
 use crate::utils::HttpClient;
 use crate::OpenAiClient;
-use crate::SimpleCache;
+use crate::RusCache;
 use anyhow::{Context, Ok};
 use axum::extract::{MatchedPath, Request};
 use axum::http::HeaderValue;
@@ -51,7 +51,7 @@ impl ApplicationServer {
     pub async fn serve(
         config: Arc<AppConfig>,
         db: Database,
-        cache: SimpleCache,
+        cache: RusCache,
         ai_client: OpenAiClient,
     ) -> anyhow::Result<()> {
         // HTTP初始化

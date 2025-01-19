@@ -7,7 +7,7 @@ use crate::{
     database::Database,
     server::{services::ai_services::OpenAisService, utils::jwt_utils::JwtTokenUtil},
     utils::HttpClient,
-    OpenAiClient, SimpleCache,
+    OpenAiClient, RusCache,
 };
 
 use self::ai_services::DynOpenAisService;
@@ -25,7 +25,7 @@ pub struct Services {
 impl Services {
     pub fn new(
         db: Database,
-        cache: SimpleCache,
+        cache: RusCache,
         http_client: HttpClient,
         config: Arc<AppConfig>,
         ai_client: OpenAiClient,

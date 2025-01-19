@@ -8,11 +8,11 @@ use tracing::info;
 pub type RedisClient = Client;
 
 #[derive(Debug, Clone)]
-pub struct SimpleCache {
+pub struct RusCache {
     pub client: RedisClient,
 }
 
-impl SimpleCache {
+impl RusCache {
     pub async fn connect(connection_string: &str) -> Result<Self> {
         let client = Client::open(connection_string)?;
         Ok(Self { client })
@@ -37,7 +37,7 @@ pub trait RedisClientExt {
 }
 
 #[async_trait]
-impl RedisClientExt for SimpleCache {
+impl RedisClientExt for RusCache {
     async fn ping(&self) -> AppResult<String> {
         let mut conn = self
             .client

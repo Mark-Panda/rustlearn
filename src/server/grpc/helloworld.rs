@@ -1,6 +1,6 @@
 use tonic::{Request, Response, Status};
 
-use crate::{config::AppConfig, utils::HttpClient, RedisClientExt, SimpleCache};
+use crate::{config::AppConfig, utils::HttpClient, RedisClientExt, RusCache};
 use std::sync::Arc;
 
 // 引入生成的代码
@@ -16,7 +16,7 @@ use proto::{
 pub struct HelloWorldGrpcServiceImpl {
     // 允许 cache 字段未被读取
     #[allow(dead_code)]
-    cache: SimpleCache,
+    cache: RusCache,
     // 允许 config 字段未被读取
     #[allow(dead_code)]
     config: Arc<AppConfig>,
@@ -26,7 +26,7 @@ pub struct HelloWorldGrpcServiceImpl {
 }
 
 impl HelloWorldGrpcServiceImpl {
-    pub fn new(config: Arc<AppConfig>, cache: SimpleCache, http_repository: HttpClient) -> Self {
+    pub fn new(config: Arc<AppConfig>, cache: RusCache, http_repository: HttpClient) -> Self {
         Self {
             config,
             cache,

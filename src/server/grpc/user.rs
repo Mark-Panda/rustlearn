@@ -4,7 +4,7 @@ use crate::{
     config::AppConfig,
     server::{dtos::ai_dto::ChatMessageDto, services::ai_services::DynOpenAisService},
     utils::HttpClient,
-    SimpleCache,
+    RusCache,
 };
 use std::sync::Arc;
 
@@ -19,7 +19,7 @@ use proto::{user_grpc_service_server::UserGrpcService, UserRequest, UserResponse
 pub struct UserGrpcServiceImpl {
     // // 允许 cache 字段未被读取
     #[allow(dead_code)]
-    cache: SimpleCache,
+    cache: RusCache,
     // 允许 config 字段未被读取
     #[allow(dead_code)]
     config: Arc<AppConfig>,
@@ -32,7 +32,7 @@ pub struct UserGrpcServiceImpl {
 impl UserGrpcServiceImpl {
     pub fn new(
         config: Arc<AppConfig>,
-        cache: SimpleCache,
+        cache: RusCache,
         http_repository: HttpClient,
         openais: DynOpenAisService,
     ) -> Self {

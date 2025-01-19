@@ -2,7 +2,7 @@ use anyhow::Context;
 use clap::Parser;
 use dotenvy::dotenv;
 use std::sync::Arc;
-use system_test::{AppConfig, ApplicationServer, Database, Logger, OpenAiClient, SimpleCache};
+use system_test::{AppConfig, ApplicationServer, Database, Logger, OpenAiClient, RusCache};
 use tracing::info;
 
 #[tokio::main]
@@ -21,7 +21,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .expect("could not initialize the openai connection ");
 
-    let cache = SimpleCache::connect(&config.cache_url)
+    let cache = RusCache::connect(&config.cache_url)
         .await
         .expect("could not initialize the cache connection ");
 
