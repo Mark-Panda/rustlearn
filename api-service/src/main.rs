@@ -2,7 +2,7 @@ use anyhow::Context;
 use api_service::{AppConfig, ApplicationServer, Logger, OpenAiClient};
 use clap::Parser;
 use dotenvy::dotenv;
-use rutils::{Database, RusCache};
+use rutils::{Database, RCache};
 use std::sync::Arc;
 use tracing::info;
 
@@ -22,7 +22,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .expect("could not initialize the openai connection ");
 
-    let cache = RusCache::connect(&config.cache_url)
+    let cache = RCache::connect(&config.cache_url)
         .await
         .expect("could not initialize the cache connection ");
 

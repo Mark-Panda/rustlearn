@@ -5,7 +5,7 @@ use crate::{
     server::{dtos::ai_dto::ChatMessageDto, services::ai_services::DynOpenAisService},
     utils::HttpClient,
 };
-use rutils::RusCache;
+use rutils::RCache;
 use std::sync::Arc;
 
 // 引入生成的代码
@@ -19,7 +19,7 @@ use proto::{user_grpc_service_server::UserGrpcService, UserRequest, UserResponse
 pub struct UserGrpcServiceImpl {
     // // 允许 cache 字段未被读取
     #[allow(dead_code)]
-    cache: RusCache,
+    cache: RCache,
     // 允许 config 字段未被读取
     #[allow(dead_code)]
     config: Arc<AppConfig>,
@@ -32,7 +32,7 @@ pub struct UserGrpcServiceImpl {
 impl UserGrpcServiceImpl {
     pub fn new(
         config: Arc<AppConfig>,
-        cache: RusCache,
+        cache: RCache,
         http_repository: HttpClient,
         openais: DynOpenAisService,
     ) -> Self {

@@ -28,7 +28,7 @@ use axum::Extension;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Json, Router};
 use lazy_static::lazy_static;
 use metrics::{counter, histogram};
-use rutils::{Database, RusCache};
+use rutils::{Database, RCache};
 use serde_json::json;
 use std::net::ToSocketAddrs;
 use tokio::time::Instant;
@@ -49,7 +49,7 @@ impl ApplicationServer {
     pub async fn serve(
         config: Arc<AppConfig>,
         db: Database,
-        cache: RusCache,
+        cache: RCache,
         ai_client: OpenAiClient,
     ) -> anyhow::Result<()> {
         // HTTP初始化

@@ -9,7 +9,7 @@ use crate::{
     utils::HttpClient,
     OpenAiClient,
 };
-use rutils::{Database, RusCache};
+use rutils::{Database, RCache};
 
 use super::utils::jwt_utils::DynJwtUtil;
 
@@ -24,7 +24,7 @@ pub struct Services {
 impl Services {
     pub fn new(
         db: Database,
-        cache: RusCache,
+        cache: RCache,
         http_client: HttpClient,
         config: Arc<AppConfig>,
         ai_client: OpenAiClient,
