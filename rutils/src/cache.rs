@@ -1,4 +1,4 @@
-use crate::{error::AppResult, server::error::Error};
+use crate::{error::AppResult, error::Error};
 use anyhow::Result;
 use async_trait::async_trait;
 use redis::{Client, RedisError};

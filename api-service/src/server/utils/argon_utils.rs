@@ -1,10 +1,7 @@
-use std::sync::Arc;
+use crate::config::AppConfig;
 use argon2::Config;
-use crate::{
-    config::AppConfig,
-    server::error::{AppResult, Error},
-};
-
+use rutils::{AppResult, Error};
+use std::sync::Arc;
 /// A security service for handling JWT authentication.
 pub type DynArgonUtil = Arc<dyn ArgonUtil + Send + Sync>;
 

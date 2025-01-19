@@ -13,11 +13,7 @@ use crate::{
 };
 use async_trait::async_trait;
 
-use crate::{
-    server::error::{AppResult, Error},
-    DynRedisClientExt,
-};
-
+use rutils::{AppResult, DynRedisClientExt, Error};
 /// A reference counter for our user service allows us safely pass instances user utils
 /// around which themselves depend on the user repostiory, and ultimately, our Posgres connection pool.
 pub type DynOpenAisService = Arc<dyn OpenAisServiceTrait + Send + Sync>;

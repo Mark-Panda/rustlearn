@@ -1,6 +1,7 @@
 use tonic::{Request, Response, Status};
 
-use crate::{config::AppConfig, utils::HttpClient, RedisClientExt, RusCache};
+use crate::{config::AppConfig, utils::HttpClient};
+use rutils::{RedisClientExt, RusCache};
 use std::sync::Arc;
 
 // 引入生成的代码

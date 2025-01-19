@@ -12,5 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &["src/proto"],
         )?;
 
+    // tonic_build::compile_protos("proto/grpc.service.proto")?;
+
     Ok(())
 }

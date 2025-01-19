@@ -4,8 +4,8 @@ use crate::{
     config::AppConfig,
     server::{dtos::ai_dto::ChatMessageDto, services::ai_services::DynOpenAisService},
     utils::HttpClient,
-    RusCache,
 };
+use rutils::RusCache;
 use std::sync::Arc;
 
 // 引入生成的代码

@@ -2,7 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use sqlx::query_as;
 
-use crate::database::Database;
+use rutils::Database;
 
 use super::{OpenAi, OpenAisRepository};
 

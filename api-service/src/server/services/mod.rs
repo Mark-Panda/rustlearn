@@ -2,15 +2,14 @@ use std::sync::Arc;
 
 use tracing::info;
 
+use self::ai_services::DynOpenAisService;
 use crate::{
     config::AppConfig,
-    database::Database,
     server::{services::ai_services::OpenAisService, utils::jwt_utils::JwtTokenUtil},
     utils::HttpClient,
-    OpenAiClient, RusCache,
+    OpenAiClient,
 };
-
-use self::ai_services::DynOpenAisService;
+use rutils::{Database, RusCache};
 
 use super::utils::jwt_utils::DynJwtUtil;
 

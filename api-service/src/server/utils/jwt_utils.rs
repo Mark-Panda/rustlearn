@@ -1,6 +1,6 @@
 use crate::config::AppConfig;
-use crate::server::error::{AppResult, Error};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use rutils::{AppResult, Error};
 use serde::{Deserialize, Serialize};
 use sqlx::types::time::OffsetDateTime;
 use std::ops::Add;

@@ -4,10 +4,9 @@ use axum::{Extension, Router};
 use tracing::info;
 
 use crate::dtos::ai_dto::{ChatMessageDto, ResponseChatMessageDto};
-use crate::server::error::AppResult;
 use crate::server::extractors::ValidatedJson;
 use crate::server::services::Services;
-
+use rutils::AppResult;
 pub struct OpenAiController;
 
 impl OpenAiController {
