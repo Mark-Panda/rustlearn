@@ -68,7 +68,7 @@ impl Error {
             if let ValidationErrorsKind::Field(field_meta) = error_kind.clone() {
                 for error in field_meta.into_iter() {
                     validation_errors
-                        .entry(Cow::from(field_property))
+                        .entry(Cow::from(field_property.to_string()))
                         .or_insert_with(Vec::new)
                         .push(error.message.unwrap_or_else(|| {
                             // required validators contain None for their message, assume a default response
@@ -96,7 +96,7 @@ impl Error {
                     if let ValidationErrorsKind::Field(field_meta) = struct_error_kind {
                         for error in field_meta.into_iter() {
                             validation_errors
-                                .entry(Cow::from(struct_property))
+                                .entry(Cow::from(struct_property.to_string()))
                                 .or_insert_with(Vec::new)
                                 .push(error.message.unwrap_or_else(|| {
                                     // required validators contain None for their message, assume a default response

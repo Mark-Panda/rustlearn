@@ -26,4 +26,4 @@ redis = { version = "0.28.1", features = [
     "async-std-comp",
     "aio",
 ] }
-validator = { version = "0.19.0", features = ["derive"] }
+validator = { version = "0.20.0", features = ["derive"] }
