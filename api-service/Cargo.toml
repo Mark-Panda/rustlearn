@@ -38,7 +38,6 @@ sqlx = { version = "0.8.2", features = [
     "postgres",
     "time",
     "uuid",
-    "offline",
 ] }
 rutils = { path = "../rutils" } # 保留这一行，删除下面的重复声明
 
