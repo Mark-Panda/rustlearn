@@ -21,6 +21,7 @@ pub type DynOpenAisService = Arc<dyn OpenAisServiceTrait + Send + Sync>;
 #[async_trait]
 pub trait OpenAisServiceTrait {
     async fn chat_message(&self, request: ChatMessageDto) -> AppResult<ResponseChatMessageDto>;
+    async fn multiple_insert_message(&self) -> AppResult<String>;
 }
 
 #[derive(Clone)]
@@ -113,35 +114,39 @@ impl OpenAisServiceTrait for OpenAisService {
             }
         }
 
-        // // 批量插入 开始 --------
-        // let entries = vec![
-        //     ("chat_id_1".to_string(), "message_1".to_string()),
-        //     ("chat_id_2".to_string(), "message_2".to_string()),
-        //     ("chat_id_3".to_string(), "message_3".to_string()),
-        // ];
-        // // 调用方法
-        // match self.repository.create_multiple_openai(entries).await {
-        //     Ok(results) => {
-        //         // 处理成功的结果
-        //         for openai in results {
-        //             println!(
-        //                 "创建成功: chat_id = {}, message = {}",
-        //                 openai.chat_id, openai.message
-        //             );
-        //         }
-        //     }
-        //     Err(e) => {
-        //         // 处理错误
-        //         println!("批量创建失败: {}", e);
-        //     }
-        // }
-        // // 批量插入 结束 --------
-
         let create_chat_result = self
             .repository
             .create_openai(&chat_id, &req_message)
             .await?;
         // TODO: 不能引用use anyhow::Ok; 否则报错，用的是AppResult
         Ok(create_chat_result.into_dto())
+    }
+
+    async fn multiple_insert_message(&self) -> AppResult<String> {
+        // 批量插入 开始 --------
+        let entries = vec![
+            ("chat_id_1".to_string(), "message_1".to_string()),
+            ("chat_id_2".to_string(), "message_2".to_string()),
+            ("chat_id_3".to_string(), "message_3".to_string()),
+        ];
+        // 调用方法
+        match self.repository.create_multiple_openai(entries).await {
+            Ok(results) => {
+                // 处理成功的结果
+                for openai in results {
+                    println!(
+                        "创建成功: chat_id = {}, message = {}",
+                        openai.chat_id, openai.message
+                    );
+                }
+            }
+            Err(e) => {
+                // 处理错误
+                println!("批量创建失败: {}", e);
+            }
+        }
+        // 批量插入 结束 --------
+        // TODO: 不能引用use anyhow::Ok; 否则报错，用的是AppResult
+        Ok("ssss".to_string())
     }
 }
