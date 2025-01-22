@@ -36,4 +36,8 @@ pub type DynOpenAisRepository = Arc<dyn OpenAisRepository + Send + Sync>;
 pub trait OpenAisRepository {
     async fn create_openai(&self, chat_id: &str, message: &str) -> anyhow::Result<OpenAi>;
     async fn get_message_by_chat_id(&self, chat_id: &str) -> anyhow::Result<Option<OpenAi>>;
+    async fn create_multiple_openai(
+        &self,
+        entries: Vec<(String, String)>,
+    ) -> anyhow::Result<Vec<OpenAi>>;
 }

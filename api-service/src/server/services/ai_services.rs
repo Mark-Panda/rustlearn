@@ -113,6 +113,30 @@ impl OpenAisServiceTrait for OpenAisService {
             }
         }
 
+        // // 批量插入 开始 --------
+        // let entries = vec![
+        //     ("chat_id_1".to_string(), "message_1".to_string()),
+        //     ("chat_id_2".to_string(), "message_2".to_string()),
+        //     ("chat_id_3".to_string(), "message_3".to_string()),
+        // ];
+        // // 调用方法
+        // match self.repository.create_multiple_openai(entries).await {
+        //     Ok(results) => {
+        //         // 处理成功的结果
+        //         for openai in results {
+        //             println!(
+        //                 "创建成功: chat_id = {}, message = {}",
+        //                 openai.chat_id, openai.message
+        //             );
+        //         }
+        //     }
+        //     Err(e) => {
+        //         // 处理错误
+        //         println!("批量创建失败: {}", e);
+        //     }
+        // }
+        // // 批量插入 结束 --------
+
         let create_chat_result = self
             .repository
             .create_openai(&chat_id, &req_message)

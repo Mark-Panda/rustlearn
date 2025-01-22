@@ -38,4 +38,33 @@ impl OpenAisRepository for Database {
         .await
         .context("unexpected error while querying for openais by chat_id")
     }
+
+    async fn create_multiple_openai(
+        &self,
+        entries: Vec<(String, String)>,
+    ) -> anyhow::Result<Vec<OpenAi>> {
+        let mut tx = self.pool.begin().await?;
+        let mut results = Vec::new();
+
+        for (chat_id, message) in entries {
+            let result = query_as!(
+                OpenAi,
+                r#"
+                insert into openais (created_at, updated_at, chat_id, message)
+                values (current_timestamp, current_timestamp, $1::varchar, $2::varchar)
+                returning *
+                "#,
+                chat_id,
+                message
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .context("failed to create openai in transaction")?;
+
+            results.push(result);
+        }
+
+        tx.commit().await?;
+        Ok(results)
+    }
 }
