@@ -18,7 +18,7 @@
 - [x] env配置
 - [ ] kafka集成
 - [x] restful与protoc集成
-- [ ] cron集成
+- [x] cron集成
 - [ ] nacos集成
 
 ### 基本使用
