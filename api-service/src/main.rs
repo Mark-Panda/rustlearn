@@ -2,6 +2,7 @@ use anyhow::Context;
 use api_service::{AppConfig, ApplicationServer, Logger, OpenAiClient};
 use clap::Parser;
 use dotenvy::dotenv;
+use rutils::Scheduler;
 use rutils::{Database, RCache};
 use std::sync::Arc;
 use tracing::info;
@@ -25,6 +26,17 @@ async fn main() -> anyhow::Result<()> {
     let cache = RCache::connect(&config.cache_url)
         .await
         .expect("could not initialize the cache connection ");
+
+    // 创建调度器实例
+    let scheduler = Scheduler::new().await?;
+    // 添加定时任务（每分钟执行一次）
+    scheduler
+        .add_job("1/10 * * * * *", || async {
+            println!("执行定时任务");
+        })
+        .await?;
+    // 启动调度器
+    scheduler.start().await?;
 
     ApplicationServer::serve(config, db, cache, ai_client)
         .await

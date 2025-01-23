@@ -27,3 +27,5 @@ redis = { version = "0.28.1", features = [
     "aio",
 ] }
 validator = { version = "0.20.0", features = ["derive"] }
+tokio-cron-scheduler = "*"
+cron = "0.12"
