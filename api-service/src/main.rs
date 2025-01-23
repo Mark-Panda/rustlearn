@@ -1,8 +1,7 @@
 use anyhow::Context;
-use api_service::{AppConfig, ApplicationServer, Logger, OpenAiClient};
+use api_service::{cron::CronJobs, AppConfig, ApplicationServer, Logger, OpenAiClient};
 use clap::Parser;
 use dotenvy::dotenv;
-use rutils::Scheduler;
 use rutils::{Database, RCache};
 use std::sync::Arc;
 use tracing::info;
@@ -27,22 +26,9 @@ async fn main() -> anyhow::Result<()> {
         .await
         .expect("could not initialize the cache connection ");
 
-    // 创建调度器实例
-    let scheduler = Scheduler::new().await?;
-    // 添加定时任务（每分钟执行一次）
-    scheduler
-        .add_job("1/10 * * * * *", || async {
-            println!("执行定时任务10");
-        })
-        .await?;
-
-    scheduler
-        .add_job("1/20 * * * * *", || async {
-            println!("执行定时任务20");
-        })
-        .await?;
-    // 启动调度器
-    scheduler.start().await?;
+    // 初始化并启动定时任务
+    let cron_jobs = CronJobs::new().await?;
+    cron_jobs.setup().await?;
 
     ApplicationServer::serve(config, db, cache, ai_client)
         .await
