@@ -32,7 +32,13 @@ async fn main() -> anyhow::Result<()> {
     // 添加定时任务（每分钟执行一次）
     scheduler
         .add_job("1/10 * * * * *", || async {
-            println!("执行定时任务");
+            println!("执行定时任务10");
+        })
+        .await?;
+
+    scheduler
+        .add_job("1/20 * * * * *", || async {
+            println!("执行定时任务20");
         })
         .await?;
     // 启动调度器
