@@ -1,5 +1,5 @@
 mod cache;
-mod error;
+pub mod error;
 mod pg;
 mod scheduler;
 
