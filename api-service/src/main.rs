@@ -2,7 +2,7 @@ use anyhow::Context;
 use api_service::{cron::CronJobs, AppConfig, ApplicationServer, Logger, OpenAiClient};
 use clap::Parser;
 use dotenvy::dotenv;
-use rutils::{Database, RCache};
+use rutils::{Database, NacosClient, RCache};
 use std::sync::Arc;
 use tracing::info;
 
@@ -10,8 +10,12 @@ use tracing::info;
 async fn main() -> anyhow::Result<()> {
     dotenv().ok();
     let config = Arc::new(AppConfig::parse());
-
+    // 初始化日志
     let _guard = Logger::init(config.cargo_env);
+
+    let nacos = NacosClient::new().await?;
+    let nacos_config = nacos.get_config("test", "DEFAULT_GROUP").await?;
+    println!("直接打印配置内容: {:?}", nacos_config);
 
     info!("environment loaded and configuration parsed, initializing Postgres connection...");
     let db = Database::connect(&config.database_url)

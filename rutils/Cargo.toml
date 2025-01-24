@@ -28,4 +28,5 @@ redis = { version = "0.28.1", features = [
 ] }
 validator = { version = "0.20.0", features = ["derive"] }
 tokio-cron-scheduler = "*"
-cron = "0.12"
+cron = "0.15.0"
+nacos_rust_client = "0.3"
