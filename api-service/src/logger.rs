@@ -18,7 +18,7 @@ impl Logger {
         // TODO update the log level filter for own use
         let max_level = match cargo_env {
             CargoEnv::Local => LevelFilter::DEBUG,
-            CargoEnv::Development => LevelFilter::INFO,
+            CargoEnv::Development => LevelFilter::DEBUG,
             CargoEnv::Production => LevelFilter::INFO,
         };
 
