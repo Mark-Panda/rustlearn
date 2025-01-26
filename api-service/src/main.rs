@@ -8,10 +8,12 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let nacos = NacosClient::new().await?;
-    nacos.inject_nacos_config("test", "DEFAULT_GROUP").await?;
-
+    // 加载环境变量
     dotenv().ok();
+    // 初始化 Nacos 客户端
+    let nacos = NacosClient::new().await?;
+    // 注入 Nacos 配置到环境变量
+    nacos.inject_nacos_config("test", "DEFAULT_GROUP").await?;
     let config = Arc::new(AppConfig::parse());
     // 初始化日志
     let _guard = Logger::init(config.cargo_env);
