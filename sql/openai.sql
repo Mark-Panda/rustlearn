@@ -1,3 +1,5 @@
+-- 添加 uuid-ossp 扩展 PostgreSQL 需要安装 uuid-ossp 扩展模块才能使用 uuid_generate_v4() 函数。我们需要在创建表之前启用这个扩展。
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE "public"."openais" (
      "id" uuid DEFAULT uuid_generate_v4 (),
