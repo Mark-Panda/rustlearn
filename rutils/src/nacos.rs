@@ -45,4 +45,30 @@ impl NacosClient {
             .context("failed to get config from nacos")?;
         Ok(v)
     }
+
+    /// Inject Nacos configuration into environment variables
+    pub async fn inject_nacos_config(&self, data_id: &str, group: &str) -> anyhow::Result<()> {
+        let key = ConfigKey::new(data_id, group, "" /*tenant_id*/);
+        let nacos_config = self
+            .client
+            .get_config(&key)
+            .await
+            .context("failed to get config from nacos")?;
+        println!("直接打印配置内容: {:?}", nacos_config);
+
+        let config: serde_json::Value = serde_json::from_str(&nacos_config)?;
+        if let serde_json::Value::Object(map) = config {
+            for (key, value) in map {
+                let value_str = match value {
+                    serde_json::Value::String(s) => s,
+                    serde_json::Value::Number(n) => n.to_string(),
+                    serde_json::Value::Bool(b) => b.to_string(),
+                    _ => continue, // 跳过其他类型
+                };
+                println!("nacos_key: {}, nacos_value: {}", key, value_str);
+                env::set_var(key, value_str);
+            }
+        }
+        Ok(())
+    }
 }

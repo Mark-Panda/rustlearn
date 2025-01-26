@@ -14,8 +14,7 @@ async fn main() -> anyhow::Result<()> {
     let _guard = Logger::init(config.cargo_env);
 
     let nacos = NacosClient::new().await?;
-    let nacos_config = nacos.get_config("test", "DEFAULT_GROUP").await?;
-    println!("直接打印配置内容: {:?}", nacos_config);
+    nacos.inject_nacos_config("test", "DEFAULT_GROUP").await?;
 
     info!("environment loaded and configuration parsed, initializing Postgres connection...");
     let db = Database::connect(&config.database_url)
