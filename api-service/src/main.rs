@@ -8,13 +8,13 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let nacos = NacosClient::new().await?;
+    nacos.inject_nacos_config("test", "DEFAULT_GROUP").await?;
+
     dotenv().ok();
     let config = Arc::new(AppConfig::parse());
     // 初始化日志
     let _guard = Logger::init(config.cargo_env);
-
-    let nacos = NacosClient::new().await?;
-    nacos.inject_nacos_config("test", "DEFAULT_GROUP").await?;
 
     info!("environment loaded and configuration parsed, initializing Postgres connection...");
     let db = Database::connect(&config.database_url)
